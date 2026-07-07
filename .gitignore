@@ -1,0 +1,14 @@
+# Claude Code
+.claude/
+
+# Assets à placer manuellement (exports Figma)
+assets/logo.png
+assets/fonts/
+content/slides/panoramic.jpg
+content/slides/panoramic.png
+content/**/image.jpg
+content/**/image.png
+content/**/label.png
+
+# OS
+.DS_Store

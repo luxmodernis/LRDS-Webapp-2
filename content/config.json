@@ -1,0 +1,126 @@
+{
+  "panoramic": "content/slides/panoramic.svg",
+  "instructionDefault": "Explorer la panoramique et cliquez sur tous les PLUS pour découvrir les soins.",
+  "instructionComplete": "Vous avez visité tous les soins.",
+  "labelQuit": "QUITTER",
+  "labelBack": "RETOUR",
+  "modals": [
+    {
+      "id": "modal-01",
+      "order": 1,
+      "position": {
+        "x": 16.48,
+        "y": 50.8
+      },
+      "image": "content/modals/modal-01/image.jpg",
+      "label": "content/modals/modal-01/label.png",
+      "titleFile": "content/modals/modal-01/title.txt",
+      "textFile": "content/modals/modal-01/text.html",
+      "consigneFile": "content/modals/modal-01/consigne.txt"
+    },
+    {
+      "id": "modal-02",
+      "order": 2,
+      "position": {
+        "x": 5.97,
+        "y": 46.5
+      },
+      "image": "content/modals/modal-02/image.jpg",
+      "label": "content/modals/modal-02/label.png",
+      "titleFile": "content/modals/modal-02/title.txt",
+      "textFile": "content/modals/modal-02/text.html",
+      "consigneFile": "content/modals/modal-02/consigne.txt"
+    },
+    {
+      "id": "modal-03",
+      "order": 3,
+      "position": {
+        "x": 4.65,
+        "y": 21.2
+      },
+      "image": "content/modals/modal-03/image.jpg",
+      "label": "content/modals/modal-03/label.png",
+      "titleFile": "content/modals/modal-03/title.txt",
+      "textFile": "content/modals/modal-03/text.html",
+      "consigneFile": "content/modals/modal-03/consigne.txt"
+    },
+    {
+      "id": "modal-04",
+      "order": 4,
+      "position": {
+        "x": 15.99,
+        "y": 15.2
+      },
+      "image": "content/modals/modal-04/image.jpg",
+      "label": "content/modals/modal-04/label.png",
+      "titleFile": "content/modals/modal-04/title.txt",
+      "textFile": "content/modals/modal-04/text.html",
+      "consigneFile": "content/modals/modal-04/consigne.txt"
+    },
+    {
+      "id": "modal-05",
+      "order": 5,
+      "position": {
+        "x": 34.94,
+        "y": 33.1
+      },
+      "image": "content/modals/modal-05/image.jpg",
+      "label": "content/modals/modal-05/label.png",
+      "titleFile": "content/modals/modal-05/title.txt",
+      "textFile": "content/modals/modal-05/text.html",
+      "consigneFile": "content/modals/modal-05/consigne.txt"
+    },
+    {
+      "id": "modal-06",
+      "order": 6,
+      "position": {
+        "x": 36.14,
+        "y": 77.6
+      },
+      "image": "content/modals/modal-06/image.jpg",
+      "label": "content/modals/modal-06/label.png",
+      "titleFile": "content/modals/modal-06/title.txt",
+      "textFile": "content/modals/modal-06/text.html",
+      "consigneFile": "content/modals/modal-06/consigne.txt"
+    },
+    {
+      "id": "modal-07",
+      "order": 7,
+      "position": {
+        "x": 54.98,
+        "y": 67.1
+      },
+      "image": "content/modals/modal-07/image.jpg",
+      "label": "content/modals/modal-07/label.png",
+      "titleFile": "content/modals/modal-07/title.txt",
+      "textFile": "content/modals/modal-07/text.html",
+      "consigneFile": "content/modals/modal-07/consigne.txt"
+    },
+    {
+      "id": "modal-08",
+      "order": 8,
+      "position": {
+        "x": 84.06,
+        "y": 77.6
+      },
+      "image": "content/modals/modal-08/image.jpg",
+      "label": "content/modals/modal-08/label.png",
+      "titleFile": "content/modals/modal-08/title.txt",
+      "textFile": "content/modals/modal-08/text.html",
+      "consigneFile": "content/modals/modal-08/consigne.txt"
+    },
+    {
+      "id": "modal-09",
+      "order": 9,
+      "position": {
+        "x": 89.81,
+        "y": 21.4
+      },
+      "image": "content/modals/modal-09/image.jpg",
+      "label": "content/modals/modal-09/label.png",
+      "titleFile": "content/modals/modal-09/title.txt",
+      "textFile": "content/modals/modal-09/text.html",
+      "consigneFile": "content/modals/modal-09/consigne.txt"
+    }
+  ]
+}

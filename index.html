@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Les Rituels de Soin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── PASSWORD GATE ── -->
+<div id="passwordGate" class="pw-gate">
+  <div class="pw-box">
+    <div class="pw-logo">
+      <svg viewBox="0 0 153 52" xmlns="http://www.w3.org/2000/svg" aria-label="Les Rituels de Soin">
+        <text x="76.5" y="18" text-anchor="middle" font-family="Georgia,serif" font-size="13" letter-spacing="2" fill="#000">LES RITUELS</text>
+        <text x="76.5" y="38" text-anchor="middle" font-family="Georgia,serif" font-size="16" letter-spacing="3" fill="#000">DE SOIN</text>
+      </svg>
+    </div>
+    <p class="pw-label">Accès protégé</p>
+    <div class="pw-field-wrap">
+      <input
+        id="pwInput"
+        class="pw-input"
+        type="password"
+        placeholder="Mot de passe"
+        autocomplete="current-password"
+        aria-label="Mot de passe"
+      >
+      <button id="pwSubmit" class="btn-pill pw-submit" type="button">ENTRER</button>
+    </div>
+    <p class="pw-error" id="pwError" aria-live="polite"></p>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- ── HEADER ── -->
+  <header class="header">
+    <div class="logo-pattern">
+      <img src="" alt="Les Rituels de Soin" class="logo-img">
+    </div>
+    <button class="header-close" aria-label="Fermer">
+      <img src="" alt="" class="close-circle" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;">
+      <img src="" alt="" class="close-icon" style="position:absolute;inset:17%;width:auto;height:auto;object-fit:contain;">
+    </button>
+  </header>
+
+  <!-- ── INSTRUCTION ── -->
+  <div class="text-zone">
+    <p class="instruction-text" id="instructionText">
+      Explorer la panoramique et cliquez sur tous les PLUS pour découvrir les soins.
+    </p>
+  </div>
+
+  <!-- ── PANORAMIC + PROGRESS ── -->
+  <div class="panoramic-section">
+
+    <div class="panoramic-wrapper" id="panoramicWrapper">
+      <div class="panoramic-track" id="panoramicTrack">
+        <img src="" alt="Panoramique des soins" class="panoramic-img" id="panoramicImg" draggable="false">
+        <!-- Plus buttons injected by script.js -->
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-track">
+        <div class="progress-dot" id="progressDot"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── QUIT BUTTON (hidden until completion) ── -->
+  <div class="btn-quit-wrap" id="btnQuitWrap" style="display:none">
+    <button class="btn-pill" id="btnQuit">QUITTER</button>
+  </div>
+
+</div><!-- /#app -->
+
+
+<!-- ── MODAL OVERLAY ── -->
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal-sheet" id="modalSheet">
+
+    <!-- Image + gradient + title + toggle btn -->
+    <div class="modal-img-wrap">
+      <img src="" alt="" class="modal-img" id="modalImg" draggable="false">
+      <div class="modal-gradient"></div>
+
+      <!-- Title floats over the gradient -->
+      <div class="modal-title-wrap">
+        <h1 class="modal-title" id="modalTitle"></h1>
+      </div>
+
+      <!-- +/× button overlapping bottom edge of image -->
+      <button class="modal-toggle-btn" id="modalToggleBtn" aria-label="Voir / Masquer le détail">
+        <img src="" alt="" id="toggleBtnCircle" class="btn-circle">
+        <img src="" alt="" id="toggleBtnIcon" class="btn-icon">
+      </button>
+    </div>
+
+    <!-- Scrollable zone (content + label share this space) -->
+    <div class="modal-scroll-area" id="modalScrollArea">
+
+      <!-- Product info panel (default visible) -->
+      <div class="modal-content-panel" id="modalContentPanel">
+        <div class="modal-text" id="modalText"></div>
+      </div>
+
+      <!-- Label panel (hidden until + clicked) -->
+      <div class="modal-label-panel" id="modalLabelPanel">
+        <p class="modal-consigne" id="modalConsigne"></p>
+        <img src="" alt="Étiquette produit" class="modal-label-img" id="modalLabelImg" draggable="false">
+      </div>
+
+    </div><!-- /.modal-scroll-area -->
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button class="btn-pill" id="btnRetour">RETOUR</button>
+    </div>
+
+  </div><!-- /.modal-sheet -->
+</div><!-- /.modal-overlay -->
+
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+/* ===========================
+   FONTS
+   =========================== */
+@font-face {
+  font-family: 'Diptyque Saint-Germain';
+  font-style: normal;
+  font-weight: 400;
+  src: url('assets/fonts/DiptyqueSaintGermain-Regular.woff2') format('woff2'),
+       url('assets/fonts/DiptyqueSaintGermain-Regular.woff') format('woff');
+}
+@font-face {
+  font-family: 'Diptyque Saint-Germain';
+  font-style: normal;
+  font-weight: 700;
+  src: url('assets/fonts/DiptyqueSaintGermain-Bold.woff2') format('woff2'),
+       url('assets/fonts/DiptyqueSaintGermain-Bold.woff') format('woff');
+}
+
+/* ===========================
+   RESET & BASE
+   =========================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+body {
+  font-family: 'Diptyque Saint-Germain', Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  color: #000;
+  -webkit-font-smoothing: antialiased;
+  touch-action: none;
+  user-select: none;
+}
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* ===========================
+   APP SHELL
+   =========================== */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===========================
+   HEADER
+   =========================== */
+.header {
+  position: relative;
+  flex: 0 0 auto;
+  height: clamp(80px, 12vh, 110px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 10px;
+}
+.logo-img {
+  height: clamp(40px, 6vh, 56px);
+  width: auto;
+  object-fit: contain;
+}
+.header-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  overflow: visible;
+}
+.header-close .close-circle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.header-close .close-icon {
+  position: absolute;
+  inset: 17%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* ===========================
+   INSTRUCTION TEXT
+   =========================== */
+.text-zone {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+  min-height: clamp(80px, 14.5vh, 130px);
+}
+.instruction-text {
+  font-size: clamp(15px, 4.5vw, 18px);
+  line-height: 1.4;
+  text-align: left;
+  color: #000;
+  transition: opacity 0.4s ease;
+}
+.instruction-text.centered {
+  text-align: center;
+}
+
+/* ===========================
+   PANORAMIC SECTION
+   =========================== */
+.panoramic-section {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+.panoramic-wrapper {
+  flex: 1 1 auto;
+  overflow: hidden;
+  position: relative;
+  cursor: grab;
+}
+.panoramic-wrapper.is-dragging {
+  cursor: grabbing;
+}
+.panoramic-track {
+  position: relative;
+  height: 100%;
+  will-change: transform;
+  transition: transform 0.05s linear;
+}
+.panoramic-track.is-animating {
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.panoramic-img {
+  height: 100%;
+  width: auto;
+  max-width: none; /* override global img max-width:100% */
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ===========================
+   PLUS BUTTONS
+   =========================== */
+.plus-btn {
+  position: absolute;
+  width: clamp(44px, 9.6%, 60px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.15s ease;
+  border: none;
+  background: none;
+  padding: 0;
+  z-index: 10;
+  -webkit-tap-highlight-color: transparent;
+}
+.plus-btn.visible {
+  opacity: 1;
+}
+.plus-btn:active {
+  transform: translate(-50%, -50%) scale(0.9);
+}
+.plus-btn .btn-circle {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.plus-btn .btn-icon {
+  position: absolute;
+  top: 28.33%;
+  left: 28.33%;
+  width: 43.34%;
+  height: 43.34%;
+  object-fit: contain;
+}
+
+/* ===========================
+   PROGRESS BAR
+   =========================== */
+.progress-bar-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0 clamp(16px, 4vh, 30px);
+}
+.progress-track {
+  position: relative;
+  width: clamp(200px, 76vw, 300px);
+  height: 4px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.25);
+}
+.progress-dot {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: clamp(28px, 10vw, 40px);
+  height: 8px;
+  background: #000;
+  border-radius: 8px;
+  transform: translateY(-50%);
+  transition: left 0.1s linear;
+}
+
+/* ===========================
+   QUIT BUTTON
+   =========================== */
+.btn-quit-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 0 0 clamp(20px, 5vh, 40px);
+}
+
+/* ===========================
+   PILL BUTTON (shared)
+   =========================== */
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 40px;
+  padding: 14px 50px 14px;
+  font-family: 'Diptyque Saint-Germain', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(16px, 4vw, 20px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===========================
+   MODAL OVERLAY
+   =========================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(100%);
+  transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.modal-overlay.open {
+  transform: translateY(0);
+}
+
+/* ===========================
+   MODAL SHEET
+   =========================== */
+.modal-sheet {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Image zone with gradient overlay */
+.modal-img-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+}
+.modal-img {
+  width: 100%;
+  aspect-ratio: 4080 / 2295;
+  object-fit: cover;
+  display: block;
+}
+
+/* White gradient top-to-transparent covering the image+title zone */
+.modal-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(to bottom,
+    #fff 0%,
+    #fff 55%,
+    rgba(255,255,255,0) 100%
+  );
+  pointer-events: none;
+}
+
+/* Title sits above the image, inside the gradient zone */
+.modal-title-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 40px 40px 10px;
+  text-align: center;
+  pointer-events: none;
+}
+.modal-title {
+  font-size: clamp(20px, 5.5vw, 24px);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #000;
+  text-align: center;
+}
+
+/* Toggle +/X button — overlaps bottom edge of image */
+.modal-toggle-btn {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-toggle-btn img.btn-circle {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.modal-toggle-btn img.btn-icon {
+  position: absolute;
+  top: 28.33%;
+  left: 28.33%;
+  width: 43.34%;
+  height: 43.34%;
+  object-fit: contain;
+}
+.modal-toggle-btn .icon-plus { display: block; }
+.modal-toggle-btn .icon-cross { display: none; }
+.modal-toggle-btn.is-cross .icon-plus { display: none; }
+.modal-toggle-btn.is-cross .icon-cross { display: block; }
+
+/* ===========================
+   MODAL SCROLLABLE AREA
+   =========================== */
+.modal-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  /* reserve enough height so panels can animate without collapsing */
+  min-height: 0;
+}
+
+/* Content panel (product info) */
+.modal-content-panel {
+  padding: 50px 40px 20px;
+  transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.35s ease;
+}
+.modal-content-panel.hidden-up {
+  transform: translateY(-120%);
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+}
+
+.modal-text p {
+  font-size: clamp(15px, 4.5vw, 18px);
+  line-height: 1.5;
+  color: #000;
+  margin-bottom: 12px;
+}
+.modal-text .label-section {
+  font-size: clamp(10px, 3vw, 12px);
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 16px;
+  margin-bottom: 4px;
+}
+.modal-text .label-section:first-child {
+  margin-top: 0;
+}
+
+/* Label panel (étiquette) — hidden below scroll area until + clicked */
+.modal-label-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 50px 40px 20px;
+  transform: translateY(60px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.35s ease;
+}
+.modal-label-panel.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-consigne {
+  font-size: clamp(15px, 4.5vw, 18px);
+  line-height: 1.5;
+  text-align: center;
+  color: #000;
+}
+.modal-label-img {
+  width: clamp(180px, 62vw, 241px);
+  height: auto;
+  object-fit: contain;
+}
+
+/* ===========================
+   MODAL FOOTER
+   =========================== */
+.modal-footer {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 0 0 clamp(24px, 5vh, 40px);
+}
+
+/* ===========================
+   ANIMATIONS — INTRO
+   =========================== */
+@keyframes fadeInBtn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+.plus-btn.animate-in {
+  animation: fadeInBtn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ===========================
+   STATE: ALL COMPLETE
+   =========================== */
+.plus-btn.visited .btn-circle {
+  /* white circle for visited state is handled via src swap in JS */
+}
+
+/* ===========================
+   PASSWORD GATE
+   =========================== */
+.pw-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+.pw-gate.unlocked {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.pw-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: clamp(260px, 80vw, 320px);
+}
+.pw-logo svg {
+  width: 140px;
+  height: auto;
+}
+.pw-label {
+  font-family: 'Diptyque Saint-Germain', Georgia, serif;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #888;
+  margin: 0;
+}
+.pw-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+.pw-input {
+  width: 100%;
+  padding: 14px 20px;
+  border: 1.5px solid #000;
+  border-radius: 40px;
+  font-family: 'Diptyque Saint-Germain', Georgia, serif;
+  font-size: 16px;
+  color: #000;
+  background: #fff;
+  text-align: center;
+  outline: none;
+  letter-spacing: 0.15em;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.pw-input::placeholder {
+  color: #bbb;
+  letter-spacing: 0.1em;
+}
+.pw-input:focus {
+  border-color: #000;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+}
+.pw-submit {
+  width: 100%;
+}
+.pw-error {
+  font-family: 'Diptyque Saint-Germain', Georgia, serif;
+  font-size: 13px;
+  color: #c00;
+  text-align: center;
+  min-height: 1.2em;
+  margin: -10px 0 0;
+  transition: opacity 0.2s;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+.pw-input.shake {
+  animation: shake 0.35s ease;
+}
