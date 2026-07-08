@@ -372,7 +372,7 @@ function showCompletionState() {
     dom.instructionText.style.opacity = '1';
   }, 400);
 
-  dom.btnQuitWrap.style.display = 'flex';
+  dom.btnQuitWrap.classList.add('visible');
   if (state.config.labelQuit) dom.btnQuit.textContent = state.config.labelQuit;
 }
 
