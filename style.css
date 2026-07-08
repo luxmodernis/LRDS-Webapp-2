@@ -62,24 +62,6 @@ img {
 }
 
 /* ===========================
-   HEADER
-   =========================== */
-.header {
-  position: relative;
-  flex: 0 0 auto;
-  height: clamp(70px, 10.5vh, 90px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 8px;
-}
-.logo-img {
-  height: clamp(40px, 6vh, 56px);
-  width: auto;
-  object-fit: contain;
-}
-
-/* ===========================
    INSTRUCTION TEXT
    =========================== */
 .text-zone {
@@ -101,7 +83,7 @@ img {
 }
 
 /* ===========================
-   QUIT BUTTON — hauteur 0, overflow visible, ne perturbe pas le layout
+   QUIT BUTTON — hauteur 0, ne perturbe pas le layout
    =========================== */
 .btn-quit-wrap {
   flex: 0 0 0;
@@ -144,9 +126,6 @@ img {
   position: relative;
   height: 100%;
   will-change: transform;
-}
-.panoramic-track.is-animating {
-  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 .panoramic-img {
   height: 100%;
@@ -198,39 +177,41 @@ img {
 }
 
 /* ===========================
-   PROGRESS BAR — overlaid sur le diapo
+   PROGRESS STRIP — sous le diapo
    =========================== */
-.progress-bar-wrap {
-  position: absolute;
-  bottom: clamp(16px, 4vh, 30px);
-  left: 0;
-  right: 0;
-  z-index: 5;
+.progress-strip {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: auto;
+  padding: 26px 0;
 }
 .progress-track {
   position: relative;
-  width: clamp(200px, 76vw, 300px);
-  height: 4px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.25);
+  width: 290px;
+  height: 8px;
   cursor: pointer;
   touch-action: none;
 }
-.progress-dot {
+/* Ligne fine noire au centre */
+.progress-track::before {
+  content: '';
   position: absolute;
   top: 50%;
   left: 0;
-  width: clamp(28px, 10vw, 40px);
+  right: 0;
+  height: 1px;
+  background: #000;
+  transform: translateY(-50%);
+}
+.progress-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40px;
   height: 8px;
   background: #000;
   border-radius: 8px;
-  transform: translateY(-50%);
-  transition: left 0.1s linear;
   pointer-events: none;
 }
 
@@ -245,7 +226,7 @@ img {
   color: #fff;
   border: 2px solid #fff;
   border-radius: 40px;
-  padding: 14px 50px 14px;
+  padding: 14px 50px;
   font-family: 'Diptyque Saint-Germain', Georgia, serif;
   font-weight: 700;
   font-size: clamp(16px, 4vw, 20px);
@@ -287,7 +268,7 @@ img {
   overflow: hidden;
 }
 
-/* Title above image — compact */
+/* Titre fixe — ne slide pas */
 .modal-title-wrap {
   flex: 0 0 auto;
   padding: 16px 32px 10px;
@@ -300,9 +281,32 @@ img {
   color: #000;
 }
 
-/* Image — réduite homothétiquement, centrée */
+/* ===========================
+   MODAL PAGES TRACK — push horizontal
+   =========================== */
+.modal-pages-track {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  width: 200%;
+  transition: transform 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.modal-pages-track.show-page2 {
+  transform: translateX(-50%);
+}
+
+/* Chaque page = 50% du track = 100% de l'écran */
+.modal-page {
+  flex: 0 0 50%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===========================
+   PAGE 1
+   =========================== */
 .modal-img-wrap {
-  position: relative;
   flex: 0 0 auto;
   width: 84%;
   margin: 0 auto;
@@ -314,73 +318,17 @@ img {
   display: block;
   border-radius: 4px;
 }
-
-/* Toggle +/× button — overlaps bottom edge of image */
-.modal-toggle-btn {
-  position: absolute;
-  bottom: -28px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 56px;
-  height: 56px;
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  z-index: 10;
-  -webkit-tap-highlight-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal-toggle-btn img.btn-circle {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-/* + icon rotates 45° → becomes × */
-.modal-toggle-btn img.btn-icon {
-  position: absolute;
-  top: 28.33%;
-  left: 28.33%;
-  width: 43.34%;
-  height: 43.34%;
-  object-fit: contain;
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.modal-toggle-btn.is-cross img.btn-icon {
-  transform: rotate(45deg);
-}
-
-/* Gradient below image */
 .modal-gradient {
   flex: 0 0 42px;
   background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, #fff 100%);
   pointer-events: none;
 }
-
-/* ===========================
-   MODAL PANELS AREA — vertical slide
-   texte visible par défaut, label monte depuis le bas
-   =========================== */
-.modal-panels-area {
+.modal-text-area {
   flex: 1 1 auto;
   min-height: 0;
-  position: relative;
   overflow: hidden;
+  padding: 4px 32px 0;
 }
-
-/* Panel texte */
-.modal-content-panel {
-  position: absolute;
-  inset: 0;
-  padding: 6px 32px 0;
-  overflow: hidden;
-  transition: transform 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
 .modal-text p {
   font-size: clamp(14px, 4vw, 17px);
   line-height: 1.5;
@@ -399,28 +347,41 @@ img {
   margin-top: 0;
 }
 
-/* Panel étiquette — part du bas, monte vers le haut */
-.modal-label-panel {
-  position: absolute;
-  inset: 0;
+/* ===========================
+   PAGE 2
+   =========================== */
+.modal-packshot {
+  flex: 0 0 auto;
+  width: 84%;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  background: #f0f0f0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.modal-packshot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.modal-packshot-img[src=""] {
+  display: none;
+}
+.modal-page2-content {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 6px 32px 0;
-  transform: translateY(100%);
-  transition: transform 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  padding: 10px 32px 0;
+  overflow: hidden;
 }
-
-/* Quand label actif : texte monte, label descend en place */
-.modal-panels-area.show-label .modal-content-panel {
-  transform: translateY(-100%);
-}
-.modal-panels-area.show-label .modal-label-panel {
-  transform: translateY(0);
-}
-
 .modal-consigne {
   flex: 0 0 auto;
   font-size: clamp(14px, 4vw, 17px);
@@ -446,8 +407,6 @@ img {
   justify-content: center;
   padding: 6px 0 clamp(12px, 2.5vh, 22px);
 }
-
-/* removed animate-in keyframe — fade via transition only */
 
 /* ===========================
    PASSWORD GATE

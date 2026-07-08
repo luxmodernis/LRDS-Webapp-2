@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Les Rituels de Soin</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
@@ -36,13 +36,6 @@
 
 <div id="app">
 
-  <!-- ── HEADER ── -->
-  <header class="header">
-    <div class="logo-pattern">
-      <img src="" alt="Les Rituels de Soin" class="logo-img">
-    </div>
-  </header>
-
   <!-- ── INSTRUCTION ── -->
   <div class="text-zone">
     <p class="instruction-text" id="instructionText">
@@ -50,27 +43,26 @@
     </p>
   </div>
 
-  <!-- ── QUIT BUTTON (chevauchant le diapo, caché jusqu'à complétion) ── -->
+  <!-- ── QUIT BUTTON (hauteur 0, ne perturbe pas le layout) ── -->
   <div class="btn-quit-wrap" id="btnQuitWrap">
     <button class="btn-pill" id="btnQuit">QUITTER</button>
   </div>
 
-  <!-- ── PANORAMIC + PROGRESS (overlaid) ── -->
+  <!-- ── PANORAMIC ── -->
   <div class="panoramic-section">
-
     <div class="panoramic-wrapper" id="panoramicWrapper">
       <div class="panoramic-track" id="panoramicTrack">
         <img src="" alt="Panoramique des soins" class="panoramic-img" id="panoramicImg" draggable="false">
         <!-- Plus buttons injected by script.js -->
       </div>
     </div>
+  </div>
 
-    <div class="progress-bar-wrap" id="progressBarWrap">
-      <div class="progress-track" id="progressTrack">
-        <div class="progress-dot" id="progressDot"></div>
-      </div>
+  <!-- ── PROGRESS STRIP (sous le diapo) ── -->
+  <div class="progress-strip">
+    <div class="progress-track" id="progressTrack">
+      <div class="progress-dot" id="progressDot"></div>
     </div>
-
   </div>
 
 </div><!-- /#app -->
@@ -80,46 +72,49 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-sheet" id="modalSheet">
 
-    <!-- Title above image -->
+    <!-- Titre fixe — ne slide pas -->
     <div class="modal-title-wrap">
       <h1 class="modal-title" id="modalTitle"></h1>
     </div>
 
-    <!-- Image + toggle button -->
-    <div class="modal-img-wrap">
-      <img src="" alt="" class="modal-img" id="modalImg" draggable="false">
-      <button class="modal-toggle-btn" id="modalToggleBtn" aria-label="Voir / Masquer l'étiquette">
-        <img src="" alt="" id="toggleBtnCircle" class="btn-circle">
-        <img src="" alt="" id="toggleBtnIcon" class="btn-icon">
-      </button>
-    </div>
+    <!-- Pages track — slide horizontalement -->
+    <div class="modal-pages-track" id="modalPagesTrack">
 
-    <!-- Gradient below image -->
-    <div class="modal-gradient"></div>
-
-    <!-- Vertical panels area : texte (default) | étiquette (from bottom) -->
-    <div class="modal-panels-area" id="modalPanelsArea">
-
-      <div class="modal-content-panel" id="modalContentPanel">
-        <div class="modal-text" id="modalText"></div>
+      <!-- Page 1 : image + texte + SUITE -->
+      <div class="modal-page" id="modalPage1">
+        <div class="modal-img-wrap">
+          <img src="" alt="" class="modal-img" id="modalImg" draggable="false">
+        </div>
+        <div class="modal-gradient"></div>
+        <div class="modal-text-area">
+          <div class="modal-text" id="modalText"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-pill" id="btnSuite">SUITE</button>
+        </div>
       </div>
 
-      <div class="modal-label-panel" id="modalLabelPanel">
-        <p class="modal-consigne" id="modalConsigne"></p>
-        <img src="" alt="Étiquette produit" class="modal-label-img" id="modalLabelImg" draggable="false">
+      <!-- Page 2 : packshot + consigne + étiquette + RETOUR -->
+      <div class="modal-page" id="modalPage2">
+        <div class="modal-packshot" id="modalPackshot">
+          <!-- packshot image — placeholder -->
+          <img src="" alt="" class="modal-packshot-img" id="modalPackshotImg" draggable="false">
+        </div>
+        <div class="modal-page2-content">
+          <p class="modal-consigne" id="modalConsigne"></p>
+          <img src="" alt="Étiquette produit" class="modal-label-img" id="modalLabelImg" draggable="false">
+        </div>
+        <div class="modal-footer">
+          <button class="btn-pill" id="btnRetour">RETOUR</button>
+        </div>
       </div>
 
-    </div>
-
-    <!-- Footer -->
-    <div class="modal-footer">
-      <button class="btn-pill" id="btnRetour">RETOUR</button>
-    </div>
+    </div><!-- /.modal-pages-track -->
 
   </div>
 </div>
 
 
-<script src="script.js?v=4"></script>
+<script src="script.js?v=5"></script>
 </body>
 </html>

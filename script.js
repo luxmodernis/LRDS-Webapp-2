@@ -43,7 +43,6 @@ function initPasswordGate() {
    =========================== */
 const ASSETS = {
   panoramic:       'content/slides/panoramic.webp',
-  logoPattern:     'assets/logo.svg',
   plusBlackCircle: 'assets/plus-black-circle.svg',
   plusBlackIcon:   'assets/plus-black-icon.svg',
   plusWhiteCircle: 'assets/plus-white-circle.svg',
@@ -57,18 +56,17 @@ const state = {
   config: null,
   visited: new Set(),
   currentModalId: null,
-  modalLabelVisible: false,
+  modalPage: 1,         // 1 ou 2
   scrollX: 0,
   maxScrollX: 0,
   isDragging: false,
   dragStartX: 0,
   dragScrollX: 0,
-  introPanning: false,   // bloque le drag pendant le pan initial uniquement
-  introComplete: false,  // tous les boutons sont apparus
+  introPanning: false,
+  introComplete: false,
   animating: false,
   progressDragging: false,
   allVisited: false,
-  // momentum
   dragVelocity: 0,
   dragLastX: 0,
   dragLastTime: 0,
@@ -93,14 +91,11 @@ const dom = {
   modalImg:         $('modalImg'),
   modalTitle:       $('modalTitle'),
   modalText:        $('modalText'),
-  modalContentPanel:$('modalContentPanel'),
-  modalPanelsArea:  $('modalPanelsArea'),
-  modalLabelPanel:  $('modalLabelPanel'),
+  modalPagesTrack:  $('modalPagesTrack'),
   modalConsigne:    $('modalConsigne'),
   modalLabelImg:    $('modalLabelImg'),
-  modalToggleBtn:   $('modalToggleBtn'),
-  toggleBtnCircle:  $('toggleBtnCircle'),
-  toggleBtnIcon:    $('toggleBtnIcon'),
+  modalPackshotImg: $('modalPackshotImg'),
+  btnSuite:         $('btnSuite'),
   btnRetour:        $('btnRetour'),
 };
 
@@ -109,8 +104,6 @@ const dom = {
    =========================== */
 async function init() {
   state.config = await loadConfig();
-
-  document.querySelector('.logo-img').src = ASSETS.logoPattern;
 
   const panoramicSrc = state.config.panoramic || ASSETS.panoramic;
   await new Promise(resolve => {
@@ -123,15 +116,13 @@ async function init() {
     }
   });
 
-  // Aligne la largeur du track sur celle de l'image rendue
-  // so que left:X% sur les boutons soit relatif à l'image, pas au viewport
   dom.panoramicTrack.style.width = dom.panoramicImg.offsetWidth + 'px';
 
   computeScrollBounds();
   renderPlusButtons();
   setupDrag();
   setupProgressBar();
-  setupModalToggle();
+  setupSuite();
   setupRetour();
   setupQuit();
   window.addEventListener('resize', onResize);
@@ -151,10 +142,38 @@ async function loadConfig() {
       instructionDefault: 'Explorer la panoramique et cliquez sur tous les PLUS pour découvrir les soins.',
       instructionComplete: 'Vous avez visité tous les soins.',
       labelQuit: 'QUITTER',
-      labelBack: 'RETOUR',
       modals: [],
     };
   }
+}
+
+/* ===========================
+   PRELOAD — images + textes des modales
+   =========================== */
+const modalCache = {};
+
+function preloadModalImages() {
+  const modals = state.config.modals || [];
+  modals.forEach(modal => {
+    if (modal.image)   { const i = new Image(); i.src = modal.image; }
+    if (modal.label)   { const i = new Image(); i.src = modal.label; }
+    if (modal.packshot){ const i = new Image(); i.src = modal.packshot; }
+    preloadModalText(modal);
+  });
+}
+
+async function preloadModalText(modal) {
+  const cache = modalCache[modal.id] = { title: '', text: '', consigne: '' };
+  try {
+    const [tR, xR, cR] = await Promise.all([
+      modal.titleFile    ? fetch(modal.titleFile).catch(() => null)    : null,
+      modal.textFile     ? fetch(modal.textFile).catch(() => null)     : null,
+      modal.consigneFile ? fetch(modal.consigneFile).catch(() => null) : null,
+    ]);
+    if (tR && tR.ok) cache.title    = (await tR.text()).trim().replace(/\n/g, '<br>');
+    if (xR && xR.ok) cache.text     = await xR.text();
+    if (cR && cR.ok) cache.consigne = (await cR.text()).trim();
+  } catch (e) { /* silencieux */ }
 }
 
 /* ===========================
@@ -166,15 +185,9 @@ function computeScrollBounds() {
   state.maxScrollX = Math.max(0, trackW - wrapperW);
 }
 
-function setScrollX(x, animated = false) {
+function setScrollX(x) {
   x = Math.max(0, Math.min(state.maxScrollX, x));
   state.scrollX = x;
-
-  if (animated) {
-    dom.panoramicTrack.classList.add('is-animating');
-  } else {
-    dom.panoramicTrack.classList.remove('is-animating');
-  }
   dom.panoramicTrack.style.transform = `translateX(${-x}px)`;
   updateProgress(x);
 }
@@ -189,7 +202,7 @@ function updateProgress(x) {
 }
 
 /* ===========================
-   INTRO ANIMATION — pan lent 4s via RAF (synchro barre de progression)
+   INTRO ANIMATION — pan lent 4s via RAF
    =========================== */
 function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -209,8 +222,7 @@ function playIntroAnimation() {
     function frame(now) {
       const elapsed = now - startTime;
       const t = Math.min(1, elapsed / duration);
-      const x = fromX * (1 - easeInOutCubic(t));
-      setScrollX(x);
+      setScrollX(fromX * (1 - easeInOutCubic(t)));
 
       if (t < 1) {
         requestAnimationFrame(frame);
@@ -281,7 +293,6 @@ function getPlusBtn(id) {
 
 function markVisited(id) {
   state.visited.add(id);
-  // Délai pour que le changement d'état se fasse une fois la modale ouverte
   setTimeout(() => {
     const btn = getPlusBtn(id);
     if (btn) {
@@ -292,32 +303,30 @@ function markVisited(id) {
 }
 
 /* ===========================
-   MODAL — ouvre après préchargement image
+   MODAL
    =========================== */
 function openModal(id) {
   const modal = state.config.modals.find(m => m.id === id);
   if (!modal) return;
 
   state.currentModalId = id;
-  state.modalLabelVisible = false;
+  state.modalPage = 1;
 
-  // Reset panels
-  dom.modalPanelsArea.classList.remove('show-label');
-  dom.modalToggleBtn.classList.remove('is-cross');
-  dom.toggleBtnCircle.src = ASSETS.plusBlackCircle;
-  dom.toggleBtnIcon.src = ASSETS.plusBlackIcon;
+  // Reset to page 1
+  dom.modalPagesTrack.classList.remove('show-page2');
 
-  // Injecte le contenu depuis le cache (préchargé au démarrage)
+  // Injecte le contenu depuis le cache
   const cache = modalCache[id] || {};
-  dom.modalTitle.innerHTML   = cache.title    || '';
-  dom.modalText.innerHTML    = cache.text     || '';
-  dom.modalConsigne.textContent = cache.consigne || '';
+  dom.modalTitle.innerHTML   = cache.title   || '';
+  dom.modalText.innerHTML    = cache.text    || '';
+  dom.modalConsigne.textContent = cache.consigne || 'Entraînez-vous';
 
-  // Images sans cache-busting — déjà en mémoire browser via preload
-  dom.modalImg.src      = modal.image || '';
-  dom.modalLabelImg.src = modal.label || '';
+  // Images (préchargées — pas de cache-busting)
+  dom.modalImg.src         = modal.image    || '';
+  dom.modalLabelImg.src    = modal.label    || '';
+  dom.modalPackshotImg.src = modal.packshot || '';
 
-  // Double-rAF : attend que le contenu soit peint avant de démarrer le fade
+  // Fade in après décodage image
   const openOverlay = () => dom.modalOverlay.classList.add('open');
   if (modal.image && dom.modalImg.decode) {
     dom.modalImg.decode().then(openOverlay).catch(openOverlay);
@@ -331,27 +340,21 @@ function openModal(id) {
 
 function closeModal() {
   dom.modalOverlay.classList.remove('open');
-
-  // After fade-out transition, clean up
   setTimeout(() => {
     state.currentModalId = null;
-    state.modalLabelVisible = false;
-    dom.modalPanelsArea.classList.remove('show-label');
-    dom.modalToggleBtn.classList.remove('is-cross');
+    state.modalPage = 1;
+    dom.modalPagesTrack.classList.remove('show-page2');
   }, 350);
 }
 
-function toggleModalContent() {
-  state.modalLabelVisible = !state.modalLabelVisible;
+function goToPage2() {
+  state.modalPage = 2;
+  dom.modalPagesTrack.classList.add('show-page2');
+}
 
-  if (state.modalLabelVisible) {
-    dom.modalPanelsArea.classList.add('show-label');
-    dom.modalToggleBtn.classList.add('is-cross');
-  } else {
-    dom.modalPanelsArea.classList.remove('show-label');
-    dom.modalToggleBtn.classList.remove('is-cross');
-  }
-  // btn-icon src stays the same — CSS rotate(45deg) makes the + look like ×
+function goToPage1() {
+  state.modalPage = 1;
+  dom.modalPagesTrack.classList.remove('show-page2');
 }
 
 /* ===========================
@@ -376,35 +379,6 @@ function showCompletionState() {
 
   dom.btnQuitWrap.classList.add('visible');
   if (state.config.labelQuit) dom.btnQuit.textContent = state.config.labelQuit;
-}
-
-/* ===========================
-   PRELOAD — images + textes des modales en arrière-plan
-   =========================== */
-const modalCache = {}; // { [id]: { title, text, consigne } }
-
-function preloadModalImages() {
-  const modals = state.config.modals || [];
-  modals.forEach(modal => {
-    if (modal.image) { const i = new Image(); i.src = modal.image; }
-    if (modal.label) { const i = new Image(); i.src = modal.label; }
-    // Précharge aussi les fichiers texte
-    preloadModalText(modal);
-  });
-}
-
-async function preloadModalText(modal) {
-  const cache = modalCache[modal.id] = { title: '', text: '', consigne: '' };
-  try {
-    const [tR, xR, cR] = await Promise.all([
-      modal.titleFile    ? fetch(modal.titleFile).catch(() => null)    : null,
-      modal.textFile     ? fetch(modal.textFile).catch(() => null)     : null,
-      modal.consigneFile ? fetch(modal.consigneFile).catch(() => null) : null,
-    ]);
-    if (tR && tR.ok) cache.title    = (await tR.text()).trim().replace(/\n/g, '<br>');
-    if (xR && xR.ok) cache.text     = await xR.text();
-    if (cR && cR.ok) cache.consigne = (await cR.text()).trim();
-  } catch (e) { /* silencieux */ }
 }
 
 /* ===========================
@@ -446,13 +420,11 @@ function onDragMove(e) {
   const clientX = getClientX(e);
   const dt = now - state.dragLastTime;
   if (dt > 0) {
-    // vélocité en px/ms, filtrée légèrement pour éviter les pics
     state.dragVelocity = state.dragVelocity * 0.5 + ((state.dragLastX - clientX) / dt) * 0.5;
   }
   state.dragLastX = clientX;
   state.dragLastTime = now;
-  const delta = state.dragStartX - clientX;
-  setScrollX(state.dragScrollX + delta);
+  setScrollX(state.dragScrollX + (state.dragStartX - clientX));
 }
 
 function onDragEnd() {
@@ -460,11 +432,8 @@ function onDragEnd() {
   state.isDragging = false;
   dom.panoramicWrapper.classList.remove('is-dragging');
 
-  // Inertie : lance le momentum si vitesse suffisante
-  const v = state.dragVelocity * 16; // px par frame à 60fps
-  if (Math.abs(v) > 1) {
-    applyMomentum(v);
-  }
+  const v = state.dragVelocity * 16;
+  if (Math.abs(v) > 1) applyMomentum(v);
 }
 
 function applyMomentum(v) {
@@ -525,12 +494,18 @@ function setupProgressBar() {
 /* ===========================
    EVENTS
    =========================== */
-function setupModalToggle() {
-  dom.modalToggleBtn.addEventListener('click', toggleModalContent);
+function setupSuite() {
+  dom.btnSuite.addEventListener('click', goToPage2);
 }
 
 function setupRetour() {
-  dom.btnRetour.addEventListener('click', closeModal);
+  dom.btnRetour.addEventListener('click', () => {
+    if (state.modalPage === 2) {
+      goToPage1();
+    } else {
+      closeModal();
+    }
+  });
 }
 
 function setupQuit() {
