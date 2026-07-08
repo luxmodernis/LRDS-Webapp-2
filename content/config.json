@@ -13,6 +13,7 @@
         "y": 50.8
       },
       "image": "content/modals/modal-01/image.jpg",
+      "packshot": "content/modals/modal-01/packshot.png",
       "label": "content/modals/modal-01/label.png",
       "titleFile": "content/modals/modal-01/title.txt",
       "textFile": "content/modals/modal-01/text.html",
