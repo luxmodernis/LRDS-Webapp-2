@@ -291,7 +291,7 @@ function markVisited(id) {
 /* ===========================
    MODAL — ouvre après préchargement image
    =========================== */
-async function openModal(id) {
+function openModal(id) {
   const modal = state.config.modals.find(m => m.id === id);
   if (!modal) return;
 
@@ -301,60 +301,21 @@ async function openModal(id) {
   // Reset panels
   dom.modalPanelsArea.classList.remove('show-label');
   dom.modalToggleBtn.classList.remove('is-cross');
-
-  // Init toggle button assets
   dom.toggleBtnCircle.src = ASSETS.plusBlackCircle;
   dom.toggleBtnIcon.src = ASSETS.plusBlackIcon;
 
-  // Clear stale content
-  dom.modalTitle.textContent = '';
-  dom.modalText.innerHTML = '';
-  dom.modalConsigne.textContent = '';
+  // Injecte le contenu depuis le cache (préchargé au démarrage)
+  const cache = modalCache[id] || {};
+  dom.modalTitle.innerHTML   = cache.title    || '';
+  dom.modalText.innerHTML    = cache.text     || '';
+  dom.modalConsigne.textContent = cache.consigne || '';
 
-  const cb = '?_=' + Date.now();
+  // Images sans cache-busting — déjà en mémoire browser via preload
+  dom.modalImg.src      = modal.image || '';
+  dom.modalLabelImg.src = modal.label || '';
 
-  // Preload image before opening modal
-  const imgSrc = modal.image ? modal.image + cb : '';
-  if (imgSrc) {
-    await new Promise(resolve => {
-      const preloadImg = new Image();
-      preloadImg.onload = resolve;
-      preloadImg.onerror = resolve;
-      preloadImg.src = imgSrc;
-    });
-  }
-  dom.modalImg.src = imgSrc;
-
-  // Preload label image (non-blocking)
-  if (modal.label) {
-    dom.modalLabelImg.src = modal.label + cb;
-  }
-
-  // Fetch text content in parallel
-  try {
-    const [titleRes, textRes, consigneRes] = await Promise.all([
-      modal.titleFile   ? fetch(modal.titleFile).catch(() => null)   : Promise.resolve(null),
-      modal.textFile    ? fetch(modal.textFile).catch(() => null)    : Promise.resolve(null),
-      modal.consigneFile? fetch(modal.consigneFile).catch(() => null): Promise.resolve(null),
-    ]);
-    if (titleRes && titleRes.ok) {
-      const title = await titleRes.text();
-      dom.modalTitle.innerHTML = title.trim().replace(/\n/g, '<br>');
-    }
-    if (textRes && textRes.ok) {
-      dom.modalText.innerHTML = await textRes.text();
-    }
-    if (consigneRes && consigneRes.ok) {
-      dom.modalConsigne.textContent = (await consigneRes.text()).trim();
-    }
-  } catch (e) {
-    console.warn('Could not load modal content', e);
-  }
-
-  // Fade in — tout est prêt
-  requestAnimationFrame(() => {
-    dom.modalOverlay.classList.add('open');
-  });
+  // Fade in immédiat
+  requestAnimationFrame(() => dom.modalOverlay.classList.add('open'));
 
   markVisited(id);
   checkCompletion();
@@ -416,14 +377,32 @@ function showCompletionState() {
 }
 
 /* ===========================
-   PRELOAD — images des modales en arrière-plan
+   PRELOAD — images + textes des modales en arrière-plan
    =========================== */
+const modalCache = {}; // { [id]: { title, text, consigne } }
+
 function preloadModalImages() {
   const modals = state.config.modals || [];
   modals.forEach(modal => {
     if (modal.image) { const i = new Image(); i.src = modal.image; }
     if (modal.label) { const i = new Image(); i.src = modal.label; }
+    // Précharge aussi les fichiers texte
+    preloadModalText(modal);
   });
+}
+
+async function preloadModalText(modal) {
+  const cache = modalCache[modal.id] = { title: '', text: '', consigne: '' };
+  try {
+    const [tR, xR, cR] = await Promise.all([
+      modal.titleFile    ? fetch(modal.titleFile).catch(() => null)    : null,
+      modal.textFile     ? fetch(modal.textFile).catch(() => null)     : null,
+      modal.consigneFile ? fetch(modal.consigneFile).catch(() => null) : null,
+    ]);
+    if (tR && tR.ok) cache.title    = (await tR.text()).trim().replace(/\n/g, '<br>');
+    if (xR && xR.ok) cache.text     = await xR.text();
+    if (cR && cR.ok) cache.consigne = (await cR.text()).trim();
+  } catch (e) { /* silencieux */ }
 }
 
 /* ===========================
