@@ -117,6 +117,10 @@ async function init() {
     }
   });
 
+  // Aligne la largeur du track sur celle de l'image rendue
+  // so que left:X% sur les boutons soit relatif à l'image, pas au viewport
+  dom.panoramicTrack.style.width = dom.panoramicImg.offsetWidth + 'px';
+
   computeScrollBounds();
   renderPlusButtons();
   setupDrag();
@@ -484,6 +488,7 @@ function setupQuit() {
 }
 
 function onResize() {
+  dom.panoramicTrack.style.width = dom.panoramicImg.offsetWidth + 'px';
   computeScrollBounds();
   setScrollX(state.scrollX);
 }
