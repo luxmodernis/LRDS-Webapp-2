@@ -185,10 +185,14 @@ async function preloadModalText(modal) {
 /* ===========================
    SCROLL / BOUNDS
    =========================== */
+let progressMaxLeft = 0;
+
 function computeScrollBounds() {
   const wrapperW = dom.panoramicWrapper.offsetWidth;
   const trackW = dom.panoramicTrack.scrollWidth;
   state.maxScrollX = Math.max(0, trackW - wrapperW);
+  // Mis en cache pour éviter un reflow synchrone à chaque frame d'animation
+  progressMaxLeft = dom.progressTrack.offsetWidth - dom.progressDot.offsetWidth;
 }
 
 function setScrollX(x) {
@@ -200,11 +204,8 @@ function setScrollX(x) {
 
 function updateProgress(x) {
   if (state.maxScrollX === 0) return;
-  const trackW = dom.progressTrack.offsetWidth;
-  const dotW = dom.progressDot.offsetWidth;
   const ratio = x / state.maxScrollX;
-  const maxLeft = trackW - dotW;
-  dom.progressDot.style.left = (ratio * maxLeft) + 'px';
+  dom.progressDot.style.left = (ratio * progressMaxLeft) + 'px';
 }
 
 /* ===========================
