@@ -271,13 +271,13 @@ img {
 /* Titre fixe — ne slide pas */
 .modal-title-wrap {
   flex: 0 0 auto;
-  padding: 16px 32px 10px;
+  padding: 20px 32px 0;
   text-align: center;
 }
 .modal-title {
   font-size: clamp(19px, 5vw, 22px);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
   color: #000;
 }
 
@@ -309,7 +309,7 @@ img {
 .modal-img-wrap {
   flex: 0 0 auto;
   width: 84%;
-  margin: 0 auto;
+  margin: 14px auto 0;
 }
 .modal-img {
   width: 100%;
@@ -319,7 +319,7 @@ img {
   border-radius: 4px;
 }
 .modal-gradient {
-  flex: 0 0 42px;
+  flex: 0 0 28px;
   background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, #fff 100%);
   pointer-events: none;
 }
@@ -327,7 +327,7 @@ img {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  padding: 4px 32px 0;
+  padding: 0 32px 0;
 }
 .modal-text p {
   font-size: clamp(14px, 4vw, 17px);
@@ -352,11 +352,9 @@ img {
    =========================== */
 .modal-packshot {
   flex: 0 0 auto;
-  width: 84%;
-  margin: 0 auto;
+  width: 54%;
+  margin: 20px auto 0;
   aspect-ratio: 1 / 1;
-  background: #f0f0f0;
-  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -378,8 +376,8 @@ img {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 10px 32px 0;
+  gap: 14px;
+  padding: 16px 40px 0;
   overflow: hidden;
 }
 .modal-consigne {
@@ -392,7 +390,7 @@ img {
 .modal-label-img {
   flex: 1 1 auto;
   min-height: 0;
-  max-width: clamp(120px, 44vw, 190px);
+  max-width: clamp(160px, 58vw, 240px);
   width: 100%;
   object-fit: contain;
   align-self: center;

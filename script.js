@@ -499,13 +499,7 @@ function setupSuite() {
 }
 
 function setupRetour() {
-  dom.btnRetour.addEventListener('click', () => {
-    if (state.modalPage === 2) {
-      goToPage1();
-    } else {
-      closeModal();
-    }
-  });
+  dom.btnRetour.addEventListener('click', closeModal);
 }
 
 function setupQuit() {
