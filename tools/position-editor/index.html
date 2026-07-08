@@ -316,8 +316,8 @@
 
 <script>
 const ASSETS = {
-  plusBlackCircle: '../../assets/plus-black-circle.svg',
-  plusBlackIcon:   '../../assets/plus-black-icon.svg',
+  plusBlackCircle: '/assets/plus-black-circle.svg',
+  plusBlackIcon:   '/assets/plus-black-icon.svg',
 };
 
 let config = null;
@@ -341,13 +341,10 @@ const copyBtn = document.getElementById('copy-btn');
 const copyConfirm = document.getElementById('copy-confirm');
 
 async function init() {
-  config = await fetch('../../content/config.json').then(r => r.json());
-
-  // Préfixe ../../ pour résoudre les chemins relatifs depuis tools/position-editor/
-  const ROOT = '../../';
+  config = await fetch('/content/config.json').then(r => r.json());
 
   // Load panoramic
-  img.src = ROOT + (config.panoramic || 'content/slides/panoramic.webp');
+  img.src = '/' + (config.panoramic || 'content/slides/panoramic.webp');
   await new Promise(resolve => {
     if (img.complete && img.naturalWidth > 0) resolve();
     else { img.onload = resolve; img.onerror = resolve; }
