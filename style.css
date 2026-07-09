@@ -74,12 +74,16 @@ img {
 .instruction-text {
   font-size: clamp(15px, 4.5vw, 18px);
   line-height: 1.4;
-  text-align: left;
+  text-align: center;
   color: #000;
   transition: opacity 0.4s ease;
 }
-.instruction-text.centered {
-  text-align: center;
+.instruction-text strong {
+  display: block;
+  font-size: clamp(20px, 6vw, 26px);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 6px;
 }
 
 /* ===========================
@@ -138,7 +142,7 @@ img {
 }
 
 /* ===========================
-   PLUS BUTTONS
+   INGREDIENT BUTTONS
    =========================== */
 .plus-btn {
   position: absolute;
@@ -166,14 +170,17 @@ img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  pointer-events: none;
 }
-.plus-btn .btn-icon {
-  position: absolute;
-  top: 28.33%;
-  left: 28.33%;
-  width: 43.34%;
-  height: 43.34%;
-  object-fit: contain;
+@keyframes btn-shake {
+  0%,100% { transform: translate(-50%, -50%); }
+  20% { transform: translate(calc(-50% - 8px), -50%); }
+  40% { transform: translate(calc(-50% + 8px), -50%); }
+  60% { transform: translate(calc(-50% - 5px), -50%); }
+  80% { transform: translate(calc(-50% + 5px), -50%); }
+}
+.plus-btn.wrong {
+  animation: btn-shake 0.35s ease;
 }
 
 /* ===========================
@@ -269,7 +276,7 @@ img {
   overflow: hidden;
 }
 
-/* Titre fixe — ne slide pas */
+/* Titre fixe */
 .modal-title-wrap {
   flex: 0 0 auto;
   padding: 28px 40px 0;
@@ -280,121 +287,40 @@ img {
   font-weight: 700;
   line-height: 1.25;
   color: #000;
-}
-
-/* ===========================
-   MODAL PAGES TRACK — push horizontal
-   =========================== */
-.modal-pages-track {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  width: 200%;
-  transition: transform 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-.modal-pages-track.show-page2 {
-  transform: translateX(-50%);
-}
-
-/* Chaque page = 50% du track = 100% de l'écran */
-.modal-page {
-  flex: 0 0 50%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* ===========================
-   PAGE 1
-   =========================== */
-.modal-img-wrap {
-  flex: 0 0 auto;
-  width: 84%;
-  margin: 14px auto 0;
-}
-.modal-img {
-  width: 100%;
-  aspect-ratio: 4080 / 2295;
-  object-fit: cover;
-  display: block;
-  border-radius: 4px;
-}
-.modal-gradient {
-  flex: 0 0 28px;
-  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, #fff 100%);
-  pointer-events: none;
-}
-.modal-text-area {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-  padding: 0 32px 0;
-}
-.modal-text p {
-  font-size: clamp(14px, 4vw, 17px);
-  line-height: 1.5;
-  color: #000;
-  margin-bottom: 10px;
-}
-.modal-text .label-section {
-  font-size: clamp(9px, 2.8vw, 11px);
-  font-weight: 400;
-  letter-spacing: 0.2em;
   text-transform: uppercase;
-  margin-top: 14px;
-  margin-bottom: 4px;
-}
-.modal-text .label-section:first-child {
-  margin-top: 0;
 }
 
 /* ===========================
-   PAGE 2
+   MODAL PRODUCTS — liste verticale image + légende
    =========================== */
-.modal-packshot {
-  flex: 0 0 auto;
-  width: 44%;
-  margin: 24px auto 0;
-  aspect-ratio: 103 / 67;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-.modal-packshot-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.modal-packshot-img[src=""] {
-  display: none;
-}
-.modal-page2-content {
+.modal-products {
   flex: 1 1 auto;
   min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 16px 40px 0;
-  overflow: hidden;
+  gap: clamp(20px, 5vh, 40px);
+  padding: clamp(24px, 5vh, 40px) 32px;
 }
-.modal-consigne {
+.modal-product {
   flex: 0 0 auto;
-  font-size: clamp(15px, 4.5vw, 18px);
-  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   text-align: center;
-  color: #000;
 }
-.modal-label-img {
-  flex: 1 1 auto;
-  min-height: 0;
-  max-width: clamp(200px, 62vw, 260px);
-  width: 100%;
+.modal-product-img {
+  width: clamp(120px, 34vw, 160px);
   object-fit: contain;
-  align-self: center;
+  display: block;
+}
+.modal-product-caption {
+  font-size: clamp(13px, 3.8vw, 15px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #000;
 }
 
 /* ===========================

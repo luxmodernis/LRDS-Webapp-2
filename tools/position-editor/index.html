@@ -316,8 +316,7 @@
 
 <script>
 const ASSETS = {
-  plusBlackCircle: '/assets/plus-black-circle.svg',
-  plusBlackIcon:   '/assets/plus-black-icon.svg',
+  ingredientUnfound: '/assets/ingredient-unfound.svg',
 };
 
 let config = null;
@@ -352,7 +351,7 @@ async function init() {
   maxScrollX = Math.max(0, img.offsetWidth - section.offsetWidth);
 
   // Init positions from config
-  positions = config.modals.map(m => ({
+  positions = config.ingredients.map(m => ({
     id: m.id,
     x: m.position.x,
     y: m.position.y,
@@ -379,18 +378,13 @@ function renderButtons() {
 
     const circle = document.createElement('img');
     circle.className = 'btn-circle';
-    circle.src = ASSETS.plusBlackCircle;
-
-    const icon = document.createElement('img');
-    icon.className = 'btn-icon';
-    icon.src = ASSETS.plusBlackIcon;
+    circle.src = ASSETS.ingredientUnfound;
 
     const label = document.createElement('span');
     label.className = 'btn-label';
     label.textContent = pos.id;
 
     btn.appendChild(circle);
-    btn.appendChild(icon);
     btn.appendChild(label);
 
     setupBtnDrag(btn, pos);

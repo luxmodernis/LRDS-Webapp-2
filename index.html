@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>Les Rituels de Soin</title>
-  <link rel="stylesheet" href="style.css?v=5">
+  <title>Chasse aux ingrédients</title>
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -36,11 +36,9 @@
 
 <div id="app">
 
-  <!-- ── INSTRUCTION ── -->
+  <!-- ── INSTRUCTION / CONSIGNE ── -->
   <div class="text-zone">
-    <p class="instruction-text" id="instructionText">
-      Explorer la panoramique et cliquez sur tous les PLUS pour découvrir les soins.
-    </p>
+    <p class="instruction-text" id="instructionText"></p>
   </div>
 
   <!-- ── QUIT BUTTON (hauteur 0, ne perturbe pas le layout) ── -->
@@ -72,50 +70,23 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-sheet" id="modalSheet">
 
-    <!-- Titre fixe — ne slide pas -->
     <div class="modal-title-wrap">
       <h1 class="modal-title" id="modalTitle"></h1>
     </div>
 
-    <!-- Pages track — slide horizontalement -->
-    <div class="modal-pages-track" id="modalPagesTrack">
+    <div class="modal-products" id="modalProducts">
+      <!-- Produits injectés par script.js -->
+    </div>
 
-      <!-- Page 1 : image + texte + SUITE -->
-      <div class="modal-page" id="modalPage1">
-        <div class="modal-img-wrap">
-          <img src="" alt="" class="modal-img" id="modalImg" draggable="false">
-        </div>
-        <div class="modal-gradient"></div>
-        <div class="modal-text-area">
-          <div class="modal-text" id="modalText"></div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn-pill" id="btnSuite">SUITE</button>
-        </div>
-      </div>
-
-      <!-- Page 2 : packshot + consigne + étiquette + RETOUR -->
-      <div class="modal-page" id="modalPage2">
-        <div class="modal-packshot" id="modalPackshot">
-          <!-- packshot image — placeholder -->
-          <img src="" alt="" class="modal-packshot-img" id="modalPackshotImg" draggable="false">
-        </div>
-        <div class="modal-page2-content">
-          <p class="modal-consigne" id="modalConsigne"></p>
-          <img src="" alt="Étiquette produit" class="modal-label-img" id="modalLabelImg" draggable="false">
-        </div>
-        <div class="modal-footer">
-          <button class="btn-pill" id="btnRetour">RETOUR</button>
-        </div>
-      </div>
-
-    </div><!-- /.modal-pages-track -->
+    <div class="modal-footer">
+      <button class="btn-pill" id="btnRetour">RETOUR</button>
+    </div>
 
   </div>
 </div>
 
 
 <script src="scorm.js?v=1"></script>
-<script src="script.js?v=5"></script>
+<script src="script.js?v=6"></script>
 </body>
 </html>

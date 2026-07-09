@@ -41,14 +41,49 @@ function initPasswordGate(onUnlock) {
 }
 
 /* ===========================
+   SONS — Web Audio API (pas de fichiers, pas de dépendance)
+   =========================== */
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playTone(freq, startTime, duration, type = 'sine', peakGain = 0.2) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(peakGain, startTime + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.02);
+}
+
+function playSuccessSound() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  playTone(660, now, 0.12, 'sine', 0.18);
+  playTone(990, now + 0.09, 0.18, 'sine', 0.2);
+}
+
+function playErrorSound() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  playTone(180, now, 0.22, 'square', 0.1);
+}
+
+/* ===========================
    ASSETS
    =========================== */
 const ASSETS = {
-  panoramic:       'content/slides/panoramic.webp',
-  plusBlackCircle: 'assets/plus-black-circle.svg',
-  plusBlackIcon:   'assets/plus-black-icon.svg',
-  plusWhiteCircle: 'assets/plus-white-circle.svg',
-  plusWhiteIcon:   'assets/plus-white-icon.svg',
+  panoramic:        'content/slides/panoramic.webp',
+  ingredientUnfound: 'assets/ingredient-unfound.svg',
+  ingredientFound:   'assets/ingredient-found.svg',
 };
 
 /* ===========================
@@ -57,9 +92,9 @@ const ASSETS = {
 const state = {
   config: null,
   texts: null,
-  visited: new Set(),
+  found: new Set(),
+  targetIndex: 0,
   currentModalId: null,
-  modalPage: 1,         // 1 ou 2
   scrollX: 0,
   maxScrollX: 0,
   isDragging: false,
@@ -69,7 +104,7 @@ const state = {
   introComplete: false,
   animating: false,
   progressDragging: false,
-  allVisited: false,
+  allFound: false,
   dragVelocity: 0,
   dragLastX: 0,
   dragLastTime: 0,
@@ -94,14 +129,8 @@ const dom = {
   btnQuitWrap:      $('btnQuitWrap'),
   btnQuit:          $('btnQuit'),
   modalOverlay:     $('modalOverlay'),
-  modalImg:         $('modalImg'),
   modalTitle:       $('modalTitle'),
-  modalText:        $('modalText'),
-  modalPagesTrack:  $('modalPagesTrack'),
-  modalConsigne:    $('modalConsigne'),
-  modalLabelImg:    $('modalLabelImg'),
-  modalPackshotImg: $('modalPackshotImg'),
-  btnSuite:         $('btnSuite'),
+  modalProducts:    $('modalProducts'),
   btnRetour:        $('btnRetour'),
 };
 
@@ -127,15 +156,14 @@ async function init() {
   dom.panoramicTrack.style.width = dom.panoramicImg.offsetWidth + 'px';
 
   // Verrouille la hauteur de la zone de texte pour que le diapo garde
-  // toujours la même taille, même quand le texte de fin (1 ligne) remplace
-  // l'instruction de départ (2 lignes).
+  // toujours la même taille, même quand le texte de fin (3 lignes) remplace
+  // la consigne (2 lignes).
   dom.textZone.style.minHeight = dom.textZone.offsetHeight + 'px';
 
   computeScrollBounds();
-  renderPlusButtons();
+  renderIngredientButtons();
   setupDrag();
   setupProgressBar();
-  setupSuite();
   setupRetour();
   setupQuit();
   window.addEventListener('resize', onResize);
@@ -147,11 +175,8 @@ async function init() {
 
 // Applique les textes généraux (hors modales) chargés depuis texts.html
 function applyAppTexts() {
-  const t = state.texts.app;
-  dom.instructionText.textContent = t.instructionDefault;
-  dom.btnQuit.textContent = t.labelQuit;
-  dom.btnSuite.textContent = t.labelSuite;
-  dom.btnRetour.textContent = t.labelBack;
+  dom.btnQuit.textContent = state.texts.app.labelQuit;
+  dom.btnRetour.textContent = state.texts.app.labelBack;
 }
 
 // L'animation d'intro attend deux conditions : le chargement (init) terminé
@@ -168,20 +193,18 @@ async function loadConfig() {
     return await res.json();
   } catch (e) {
     console.warn('config.json not found, using defaults');
-    return { panoramic: null, modals: [] };
+    return { panoramic: null, ingredients: [] };
   }
 }
 
 const TEXTS_FALLBACK = {
   app: {
-    instructionDefault: 'Explorer la panoramique et cliquez sur tous les PLUS pour découvrir les soins.',
-    instructionComplete: 'Vous avez visité tous les soins.',
+    promptPrefix: "Retrouvez l'ingrédient bienfaisant :",
+    completionText: 'Bravo, vous avez identifié tous les ingrédients bienfaisants présents dans la panoramique.',
     labelQuit: 'QUITTER',
-    labelSuite: 'SUITE',
     labelBack: 'RETOUR',
-    consigneDefault: "Entraînez-vous à présenter ce soin en utilisant l'étiquette",
   },
-  modals: {},
+  ingredients: {},
 };
 
 // Charge et parse le fichier unique de textes (content/texts.html).
@@ -198,16 +221,18 @@ async function loadTexts() {
       app[el.dataset.key] = el.innerHTML.trim();
     });
 
-    const modals = {};
-    doc.querySelectorAll('[data-modal]').forEach(section => {
-      const id = section.dataset.modal;
-      modals[id] = {
+    const ingredients = {};
+    doc.querySelectorAll('[data-ingredient]').forEach(section => {
+      const id = section.dataset.ingredient;
+      const products = [...section.querySelectorAll('.product [data-key="caption"]')]
+        .map(el => el.innerHTML.trim());
+      ingredients[id] = {
         title: section.querySelector('[data-key="title"]')?.innerHTML.trim() || '',
-        text:  section.querySelector('[data-key="text"]')?.innerHTML.trim() || '',
+        products,
       };
     });
 
-    return { app, modals };
+    return { app, ingredients };
   } catch (e) {
     console.warn('texts.html not found, using defaults');
     return TEXTS_FALLBACK;
@@ -218,11 +243,9 @@ async function loadTexts() {
    PRELOAD — images des modales
    =========================== */
 function preloadModalImages() {
-  const modals = state.config.modals || [];
-  modals.forEach(modal => {
-    if (modal.image)   { const i = new Image(); i.src = modal.image; }
-    if (modal.label)   { const i = new Image(); i.src = modal.label; }
-    if (modal.packshot){ const i = new Image(); i.src = modal.packshot; }
+  const ingredients = state.config.ingredients || [];
+  ingredients.forEach(ing => {
+    (ing.products || []).forEach(src => { const i = new Image(); i.src = src; });
   });
 }
 
@@ -294,143 +317,163 @@ function showButtonsSequentially() {
       if (i === sorted.length - 1) {
         state.animating = false;
         state.introComplete = true;
+        updatePrompt();
       }
     }, i * 500);
   });
 }
 
 /* ===========================
-   PLUS BUTTONS
+   INGREDIENT BUTTONS
    =========================== */
-function renderPlusButtons() {
-  const modals = state.config.modals || [];
+function renderIngredientButtons() {
+  const ingredients = state.config.ingredients || [];
 
-  modals.forEach(modal => {
+  ingredients.forEach(ing => {
     const btn = document.createElement('button');
     btn.className = 'plus-btn';
-    btn.setAttribute('data-id', modal.id);
-    btn.style.left = modal.position.x + '%';
-    btn.style.top = modal.position.y + '%';
-    btn.setAttribute('aria-label', `Découvrir ${modal.id}`);
+    btn.setAttribute('data-id', ing.id);
+    btn.style.left = ing.position.x + '%';
+    btn.style.top = ing.position.y + '%';
+    btn.setAttribute('aria-label', `Ingrédient ${ing.id}`);
 
     const circle = document.createElement('img');
     circle.className = 'btn-circle';
-    circle.src = ASSETS.plusBlackCircle;
+    circle.src = ASSETS.ingredientUnfound;
     circle.alt = '';
 
-    const icon = document.createElement('img');
-    icon.className = 'btn-icon';
-    icon.src = ASSETS.plusBlackIcon;
-    icon.alt = '';
-
     btn.appendChild(circle);
-    btn.appendChild(icon);
 
     btn.addEventListener('click', () => {
-      if (state.introPanning) return;
-      openModal(modal.id);
+      if (state.introPanning || !state.introComplete || state.allFound) return;
+      onGuess(ing.id, btn);
     });
 
     dom.panoramicTrack.appendChild(btn);
   });
 }
 
-function getPlusBtn(id) {
+function getIngredientBtn(id) {
   return dom.panoramicTrack.querySelector(`.plus-btn[data-id="${id}"]`);
 }
 
-function markVisited(id) {
-  state.visited.add(id);
-  const btn = getPlusBtn(id);
-  if (btn) {
-    btn.querySelector('.btn-circle').src = ASSETS.plusWhiteCircle;
-    btn.querySelector('.btn-icon').src = ASSETS.plusWhiteIcon;
+function orderedIngredients() {
+  return [...(state.config.ingredients || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
+}
+
+function currentTarget() {
+  return orderedIngredients()[state.targetIndex] || null;
+}
+
+/* ===========================
+   PROMPT (texte "Retrouvez l'ingrédient : NOM")
+   =========================== */
+function updatePrompt() {
+  const target = currentTarget();
+  if (!target) return;
+  const texts = state.texts.ingredients[target.id] || {};
+  dom.instructionText.classList.remove('centered');
+  dom.instructionText.innerHTML =
+    `${state.texts.app.promptPrefix}<strong>${texts.title || ''}</strong>`;
+}
+
+/* ===========================
+   GUESS HANDLING
+   =========================== */
+function onGuess(id, btn) {
+  const target = currentTarget();
+  if (!target) return;
+
+  if (id === target.id) {
+    markFound(id);
+    playSuccessSound();
+    openModal(id);
+  } else {
+    playErrorSound();
+    btn.classList.remove('wrong');
+    void btn.offsetWidth;
+    btn.classList.add('wrong');
+    btn.addEventListener('animationend', () => btn.classList.remove('wrong'), { once: true });
   }
+}
+
+function markFound(id) {
+  state.found.add(id);
+  const btn = getIngredientBtn(id);
+  if (btn) btn.querySelector('.btn-circle').src = ASSETS.ingredientFound;
 }
 
 /* ===========================
    MODAL
    =========================== */
 function openModal(id) {
-  const modal = state.config.modals.find(m => m.id === id);
-  if (!modal) return;
+  const ing = state.config.ingredients.find(i => i.id === id);
+  const texts = state.texts.ingredients[id] || {};
+  if (!ing) return;
 
   state.currentModalId = id;
-  state.modalPage = 1;
 
-  // Reset to page 1
-  dom.modalPagesTrack.classList.remove('show-page2');
+  dom.modalTitle.textContent = texts.title || '';
 
-  // Injecte le contenu depuis texts.html
-  const texts = state.texts.modals[id] || {};
-  dom.modalTitle.innerHTML   = texts.title || '';
-  dom.modalText.innerHTML    = texts.text  || '';
-  dom.modalConsigne.textContent = state.texts.app.consigneDefault;
+  dom.modalProducts.innerHTML = '';
+  (ing.products || []).forEach((src, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-product';
 
-  // Images (préchargées — pas de cache-busting)
-  dom.modalImg.src         = modal.image    || '';
-  dom.modalLabelImg.src    = modal.label    || '';
-  dom.modalPackshotImg.src = modal.packshot || '';
+    const img = document.createElement('img');
+    img.className = 'modal-product-img';
+    img.src = src;
+    img.alt = texts.products?.[i] || '';
+    img.draggable = false;
 
-  // Fade in après décodage image. Les changements visuels sur le diapo
-  // (icône du bouton, apparition de QUITTER) n'ont lieu qu'une fois la
-  // modale totalement opaque — sinon on les aperçoit par transparence
-  // pendant le fondu d'ouverture (0.3s, cf. .modal-overlay).
-  const openOverlay = () => {
-    dom.modalOverlay.classList.add('open');
-    setTimeout(() => {
-      markVisited(id);
-      checkCompletion();
-    }, 320);
-  };
-  if (modal.image && dom.modalImg.decode) {
-    dom.modalImg.decode().then(openOverlay).catch(openOverlay);
-  } else {
-    requestAnimationFrame(() => requestAnimationFrame(openOverlay));
-  }
+    const caption = document.createElement('p');
+    caption.className = 'modal-product-caption';
+    caption.textContent = texts.products?.[i] || '';
+
+    wrap.appendChild(img);
+    wrap.appendChild(caption);
+    dom.modalProducts.appendChild(wrap);
+  });
+
+  dom.modalOverlay.classList.add('open');
 }
 
 function closeModal() {
   dom.modalOverlay.classList.remove('open');
   setTimeout(() => {
+    const closedId = state.currentModalId;
     state.currentModalId = null;
-    state.modalPage = 1;
-    dom.modalPagesTrack.classList.remove('show-page2');
+    dom.modalProducts.innerHTML = '';
+    if (closedId) advanceAfterFound();
   }, 350);
 }
 
-function goToPage2() {
-  state.modalPage = 2;
-  dom.modalPagesTrack.classList.add('show-page2');
-}
-
-function goToPage1() {
-  state.modalPage = 1;
-  dom.modalPagesTrack.classList.remove('show-page2');
-}
-
 /* ===========================
-   COMPLETION
+   PROGRESSION DU JEU
    =========================== */
-function checkCompletion() {
-  const total = (state.config.modals || []).length;
+function advanceAfterFound() {
+  const total = orderedIngredients().length;
   if (total === 0) return;
 
-  // Reporte la progression au LMS à chaque modale visitée, pour qu'elle
-  // soit connue même si l'utilisateur quitte avant d'avoir tout vu.
-  if (window.ScormBridge) ScormBridge.reportProgress(state.visited.size / total);
+  // Reporte la progression au LMS à chaque ingrédient trouvé, pour qu'elle
+  // soit connue même si l'utilisateur quitte avant d'avoir tout trouvé.
+  if (window.ScormBridge) ScormBridge.reportProgress(state.found.size / total);
 
-  if (state.visited.size >= total && !state.allVisited) {
-    state.allVisited = true;
+  state.targetIndex += 1;
+
+  if (state.found.size >= total && !state.allFound) {
+    state.allFound = true;
     if (window.ScormBridge) ScormBridge.reportCompleted();
     showCompletionState();
+  } else {
+    updatePrompt();
   }
 }
 
 function showCompletionState() {
   dom.instructionText.style.opacity = '0';
   setTimeout(() => {
-    dom.instructionText.textContent = state.texts.app.instructionComplete;
+    dom.instructionText.textContent = state.texts.app.completionText;
     dom.instructionText.classList.add('centered');
     dom.instructionText.style.opacity = '1';
   }, 400);
@@ -551,10 +594,6 @@ function setupProgressBar() {
 /* ===========================
    EVENTS
    =========================== */
-function setupSuite() {
-  dom.btnSuite.addEventListener('click', goToPage2);
-}
-
 function setupRetour() {
   dom.btnRetour.addEventListener('click', closeModal);
 }

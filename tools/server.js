@@ -45,10 +45,10 @@ const server = http.createServer((req, res) => {
         const config = JSON.parse(fs.readFileSync(CONFIG, 'utf8'));
 
         newPositions.forEach(({ id, x, y }) => {
-          const modal = config.modals.find(m => m.id === id);
-          if (modal) {
-            modal.position.x = x;
-            modal.position.y = y;
+          const ingredient = config.ingredients.find(m => m.id === id);
+          if (ingredient) {
+            ingredient.position.x = x;
+            ingredient.position.y = y;
           }
         });
 
