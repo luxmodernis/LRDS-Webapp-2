@@ -1,49 +1,58 @@
 <!--
   ═══════════════════════════════════════════════════════════════
-  TEXTES — Chasse aux ingrédients bienfaisants (Diptyque)
+  TEXTS — Ingredient Hunt (Diptyque)
   ═══════════════════════════════════════════════════════════════
 
-  C'est le SEUL fichier à traduire pour produire un package dans
-  une autre langue. Chaque langue = une copie de ce fichier avec
-  le même nom (content/texts.html) et la même structure, déposée
-  dans son propre package avec les assets (image du panoramique
-  et images produits des modales).
+  This is the ONLY file that needs translating to produce a package
+  in another language. Each language = a copy of this file with the
+  same name (content/texts.html) and the same structure, delivered
+  in its own package together with the assets (panoramic image and
+  the product images for each ingredient).
 
-  Consignes pour la traduction :
-  - Ne touchez pas aux attributs (data-key, data-ingredient, class).
-  - Vous pouvez traduire tout le texte visible.
-  - L'ordre des <section data-ingredient="ing-XX"> définit l'ordre
-    dans lequel les ingrédients sont demandés au joueur — ne pas
-    réordonner sans ajuster aussi content/config.json (champ "order").
-  - Chaque section peut contenir 1 à plusieurs <div class="product">
-    (un par produit associé à l'ingrédient) — leur nombre et leur
-    ordre doivent correspondre au tableau "products" du même
-    ingrédient dans content/config.json.
+  IMPORTANT — DO NOT TRANSLATE ANYTHING INSIDE COMMENTS.
+  Everything between <!-- and --> (including this whole block, and
+  every "INGREDIENT NN — ..." section header below) is an internal
+  comment for developers only. Leave all comments exactly as they
+  are, in English. Only translate the visible text found inside
+  <h1>, <p>, and <div> tags (see "Translation guidelines" below).
+
+  Translation guidelines:
+  - Do not touch any attribute (data-key, data-ingredient, class).
+  - Translate all visible text (the content inside <h1>, <p>, and
+    <div> tags — not inside comments).
+  - The order of the <section data-ingredient="ing-XX"> blocks sets
+    the order in which ingredients are asked of the player — do not
+    reorder them without also updating content/config.json (the
+    "order" field for each ingredient).
+  - Each section can contain 1 or more <div class="product"> blocks
+    (one per product linked to that ingredient) — their number and
+    order must match the "products" array of the same ingredient in
+    content/config.json.
   ═══════════════════════════════════════════════════════════════
 -->
 
 <!-- ───────────────────────────────────────────────
-     TEXTES GÉNÉRAUX DE L'APPLICATION
+     GENERAL APP TEXTS
      ─────────────────────────────────────────────── -->
 <section data-app-texts>
 
-  <!-- Texte affiché avant le nom de l'ingrédient à trouver -->
+  <!-- Text shown before the name of the ingredient to find -->
   <div data-key="promptPrefix">Retrouvez l'ingrédient bienfaisant :</div>
 
-  <!-- Texte affiché une fois les 13 ingrédients trouvés -->
+  <!-- Text shown once all 13 ingredients have been found -->
   <div data-key="completionText">Bravo, vous avez identifié les 13 ingrédients bienfaisants présents dans la panoramique.</div>
 
-  <!-- Bouton de sortie, affiché une fois tous les ingrédients trouvés -->
+  <!-- Exit button, shown once all ingredients have been found -->
   <div data-key="labelQuit">QUITTER</div>
 
-  <!-- Bouton en bas de la modale ingrédient, ferme la modale -->
+  <!-- Button at the bottom of the ingredient modal, closes it -->
   <div data-key="labelBack">RETOUR</div>
 
 </section>
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 01 — Rose
+     INGREDIENT 01 — Rose
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-01">
   <h1 data-key="title">Rose</h1>
@@ -53,7 +62,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 02 — Lin
+     INGREDIENT 02 — Lin
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-02">
   <h1 data-key="title">Lin</h1>
@@ -62,7 +71,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 03 — Orge
+     INGREDIENT 03 — Orge
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-03">
   <h1 data-key="title">Orge</h1>
@@ -72,7 +81,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 04 — Noisette
+     INGREDIENT 04 — Noisette
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-04">
   <h1 data-key="title">Noisette</h1>
@@ -81,7 +90,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 05 — Amande
+     INGREDIENT 05 — Amande
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-05">
   <h1 data-key="title">Amande</h1>
@@ -91,7 +100,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 06 — Baies de genièvre
+     INGREDIENT 06 — Baies de genièvre
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-06">
   <h1 data-key="title">Baies de genièvre</h1>
@@ -100,7 +109,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 07 — Menthe
+     INGREDIENT 07 — Menthe
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-07">
   <h1 data-key="title">Menthe</h1>
@@ -110,7 +119,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 08 — Sauge
+     INGREDIENT 08 — Sauge
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-08">
   <h1 data-key="title">Sauge</h1>
@@ -119,7 +128,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 09 — Figue de barbarie
+     INGREDIENT 09 — Figue de barbarie
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-09">
   <h1 data-key="title">Figue de barbarie</h1>
@@ -129,7 +138,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 10 — Néroli
+     INGREDIENT 10 — Néroli
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-10">
   <h1 data-key="title">Néroli</h1>
@@ -138,7 +147,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 11 — Bergamote
+     INGREDIENT 11 — Bergamote
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-11">
   <h1 data-key="title">Bergamote</h1>
@@ -148,7 +157,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 12 — Jasmin
+     INGREDIENT 12 — Jasmin
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-12">
   <h1 data-key="title">Jasmin</h1>
@@ -157,7 +166,7 @@
 
 
 <!-- ───────────────────────────────────────────────
-     INGRÉDIENT 13 — Camomille
+     INGREDIENT 13 — Camomille
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-13">
   <h1 data-key="title">Camomille</h1>
