@@ -153,16 +153,32 @@
     .pos-row:hover { border-color: #999; }
     .pos-row.active { border-color: #000; background: #f9f9f9; }
 
-    .pos-id {
+    .pos-order {
+      font-family: 'SF Mono', 'Fira Mono', monospace;
+      font-size: 12px;
+      color: #999;
+      min-width: 20px;
+    }
+    .pos-names {
+      display: flex;
+      flex-direction: column;
+      min-width: 130px;
+    }
+    .pos-name {
       font-weight: 600;
-      min-width: 72px;
       color: #111;
+      text-transform: uppercase;
+    }
+    .pos-id {
+      font-size: 11px;
+      color: #999;
     }
     .pos-coords {
       font-family: 'SF Mono', 'Fira Mono', monospace;
       font-size: 12px;
       color: #444;
       flex: 1;
+      text-align: right;
     }
     .pos-dot {
       width: 10px; height: 10px;
@@ -320,7 +336,8 @@ const ASSETS = {
 };
 
 let config = null;
-let positions = []; // [{id, x, y}]
+let names = {}; // { id: "Rose" }
+let positions = []; // [{id, order, name, x, y}]
 let scrollX = 0;
 let maxScrollX = 0;
 let isPanDragging = false;
@@ -337,8 +354,25 @@ const scrollPct = document.getElementById('scroll-pct');
 const positionsList = document.getElementById('positions-list');
 const jsonOutput = document.getElementById('json-output');
 
+// Charge les noms d'ingrédients depuis texts.html pour les afficher dans la
+// liste — config.json ne contient pas de texte, seulement des id.
+async function loadNames() {
+  try {
+    const html = await fetch('/content/texts.html').then(r => r.text());
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const map = {};
+    doc.querySelectorAll('[data-ingredient]').forEach(section => {
+      map[section.dataset.ingredient] = section.querySelector('[data-key="title"]')?.textContent.trim() || '';
+    });
+    return map;
+  } catch (e) {
+    return {};
+  }
+}
+
 async function init() {
   config = await fetch('/content/config.json').then(r => r.json());
+  names = await loadNames();
 
   // Load panoramic
   img.src = '/' + (config.panoramic || 'content/slides/panoramic.webp');
@@ -350,12 +384,16 @@ async function init() {
   track.style.width = img.offsetWidth + 'px';
   maxScrollX = Math.max(0, img.offsetWidth - section.offsetWidth);
 
-  // Init positions from config
-  positions = config.ingredients.map(m => ({
-    id: m.id,
-    x: m.position.x,
-    y: m.position.y,
-  }));
+  // Init positions from config, triées dans l'ordre du jeu
+  positions = [...config.ingredients]
+    .sort((a, b) => (a.order || 0) - (b.order || 0))
+    .map(m => ({
+      id: m.id,
+      order: m.order || 0,
+      name: names[m.id] || '',
+      x: m.position.x,
+      y: m.position.y,
+    }));
 
   renderButtons();
   renderList();
@@ -382,7 +420,7 @@ function renderButtons() {
 
     const label = document.createElement('span');
     label.className = 'btn-label';
-    label.textContent = pos.id;
+    label.textContent = `${pos.order}. ${pos.name || pos.id}`;
 
     btn.appendChild(circle);
     btn.appendChild(label);
@@ -501,7 +539,11 @@ function renderList() {
     row.dataset.id = pos.id;
     row.innerHTML = `
       <span class="pos-dot"></span>
-      <span class="pos-id">${pos.id}</span>
+      <span class="pos-order">${pos.order}</span>
+      <span class="pos-names">
+        <span class="pos-name">${pos.name || '(sans nom)'}</span>
+        <span class="pos-id">${pos.id}</span>
+      </span>
       <span class="pos-coords">x: ${pos.x.toFixed(2)}%  y: ${pos.y.toFixed(2)}%</span>
     `;
     row.addEventListener('click', () => scrollToBtn(pos));

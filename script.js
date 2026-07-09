@@ -100,17 +100,12 @@ const state = {
   isDragging: false,
   dragStartX: 0,
   dragScrollX: 0,
-  introPanning: false,
-  introComplete: false,
-  animating: false,
   progressDragging: false,
   allFound: false,
   dragVelocity: 0,
   dragLastX: 0,
   dragLastTime: 0,
   momentumActive: false,
-  readyForIntro: false,
-  passwordUnlocked: false,
 };
 
 /* ===========================
@@ -153,7 +148,13 @@ async function init() {
     }
   });
 
-  dom.panoramicTrack.style.width = dom.panoramicImg.offsetWidth + 'px';
+  // Ratio naturel de l'image, utilisé pour recalculer la largeur du diapo
+  // à chaque changement de taille de la fenêtre (voir syncTrackWidth) —
+  // plus fiable que de figer un offsetWidth en px, qui se désynchronise
+  // sur mobile quand la hauteur de viewport (barre d'adresse Safari) se
+  // stabilise après le premier rendu.
+  panoramicAspectRatio = dom.panoramicImg.naturalWidth / dom.panoramicImg.naturalHeight;
+  syncTrackWidth();
 
   // Verrouille la hauteur de la zone de texte pour que le diapo garde
   // toujours la même taille, même quand le texte de fin (3 lignes) remplace
@@ -162,29 +163,23 @@ async function init() {
 
   computeScrollBounds();
   renderIngredientButtons();
+  showAllButtons();
+  updatePrompt();
   setupDrag();
   setupProgressBar();
   setupRetour();
   setupQuit();
   window.addEventListener('resize', onResize);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
+  new ResizeObserver(onResize).observe(dom.panoramicWrapper);
 
   preloadModalImages();
-  state.readyForIntro = true;
-  maybeStartIntro();
 }
 
 // Applique les textes généraux (hors modales) chargés depuis texts.html
 function applyAppTexts() {
   dom.btnQuit.textContent = state.texts.app.labelQuit;
   dom.btnRetour.textContent = state.texts.app.labelBack;
-}
-
-// L'animation d'intro attend deux conditions : le chargement (init) terminé
-// ET le mot de passe validé — sinon elle se joue derrière l'écran de mdp.
-function maybeStartIntro() {
-  if (state.readyForIntro && state.passwordUnlocked) {
-    playIntroAnimation();
-  }
 }
 
 async function loadConfig() {
@@ -253,6 +248,19 @@ function preloadModalImages() {
    SCROLL / BOUNDS
    =========================== */
 let progressMaxLeft = 0;
+let panoramicAspectRatio = 0;
+
+// Recalcule la largeur du diapo à partir du ratio naturel de l'image et de
+// la hauteur *actuelle* du wrapper, plutôt que de figer un offsetWidth en
+// px une seule fois — sur mobile, la hauteur de viewport (dvh) se stabilise
+// souvent après le premier rendu (barre d'adresse Safari qui se réduit),
+// ce qui désynchronisait la largeur du track de la largeur réelle de
+// l'image et laissait un espace blanc à droite du panoramique.
+function syncTrackWidth() {
+  if (!panoramicAspectRatio) return;
+  const h = dom.panoramicWrapper.offsetHeight;
+  dom.panoramicTrack.style.width = Math.round(h * panoramicAspectRatio) + 'px';
+}
 
 function computeScrollBounds() {
   const wrapperW = dom.panoramicWrapper.offsetWidth;
@@ -275,52 +283,8 @@ function updateProgress(x) {
   dom.progressDot.style.transform = `translate3d(${ratio * progressMaxLeft}px, 0, 0)`;
 }
 
-/* ===========================
-   INTRO ANIMATION — pan lent 5.5s via transition CSS
-   (compositeur GPU, insensible aux à-coups du thread JS)
-   =========================== */
-function playIntroAnimation() {
-  const duration = 5500;
-  const easing = 'cubic-bezier(0.65, 0, 0.35, 1)'; // équivalent ease-in-out-cubic
-
-  setScrollX(state.maxScrollX);
-  state.introPanning = true;
-  state.animating = true;
-
-  setTimeout(() => {
-    const transition = `transform ${duration}ms ${easing}`;
-    dom.panoramicTrack.style.transition = transition;
-    dom.progressDot.style.transition = transition;
-    void dom.panoramicTrack.offsetWidth; // force le navigateur à figer l'état de départ
-
-    setScrollX(0);
-
-    const onEnd = (e) => {
-      if (e.target !== dom.panoramicTrack) return;
-      dom.panoramicTrack.style.transition = '';
-      dom.progressDot.style.transition = '';
-      dom.panoramicTrack.removeEventListener('transitionend', onEnd);
-      state.introPanning = false;
-      showButtonsSequentially();
-    };
-    dom.panoramicTrack.addEventListener('transitionend', onEnd);
-  }, 400);
-}
-
-function showButtonsSequentially() {
-  const buttons = [...document.querySelectorAll('.plus-btn')];
-  const sorted = buttons.sort((a, b) => parseFloat(a.style.left) - parseFloat(b.style.left));
-
-  sorted.forEach((btn, i) => {
-    setTimeout(() => {
-      btn.classList.add('visible');
-      if (i === sorted.length - 1) {
-        state.animating = false;
-        state.introComplete = true;
-        updatePrompt();
-      }
-    }, i * 500);
-  });
+function showAllButtons() {
+  document.querySelectorAll('.plus-btn').forEach(btn => btn.classList.add('visible'));
 }
 
 /* ===========================
@@ -345,7 +309,7 @@ function renderIngredientButtons() {
     btn.appendChild(circle);
 
     btn.addEventListener('click', () => {
-      if (state.introPanning || !state.introComplete || state.allFound) return;
+      if (state.allFound) return;
       onGuess(ing.id, btn);
     });
 
@@ -501,7 +465,6 @@ function getClientX(e) {
 }
 
 function onDragStart(e) {
-  if (state.introPanning) return;
   state.momentumActive = false;
   state.isDragging = true;
   const clientX = getClientX(e);
@@ -605,7 +568,7 @@ function setupQuit() {
 }
 
 function onResize() {
-  dom.panoramicTrack.style.width = dom.panoramicImg.offsetWidth + 'px';
+  syncTrackWidth();
   computeScrollBounds();
   setScrollX(state.scrollX);
 }
@@ -615,10 +578,7 @@ function onResize() {
    =========================== */
 document.addEventListener('DOMContentLoaded', () => {
   if (window.ScormBridge) ScormBridge.initialize();
-  initPasswordGate(() => {
-    state.passwordUnlocked = true;
-    maybeStartIntro();
-  });
+  initPasswordGate(() => {});
   init();
 });
 
