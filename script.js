@@ -156,10 +156,11 @@ async function init() {
   panoramicAspectRatio = dom.panoramicImg.naturalWidth / dom.panoramicImg.naturalHeight;
   syncTrackWidth();
 
-  // Verrouille la hauteur de la zone de texte pour que le diapo garde
-  // toujours la même taille, même quand le texte de fin (3 lignes) remplace
-  // la consigne (2 lignes).
-  dom.textZone.style.minHeight = dom.textZone.offsetHeight + 'px';
+  // Verrouille la hauteur de la zone de texte sur le maximum nécessaire
+  // parmi TOUS les contenus possibles (chaque prompt d'ingrédient + le
+  // texte de fin) — pas seulement le premier rendu — pour que le diapo
+  // en dessous ne change jamais de taille pendant la partie.
+  lockTextZoneHeight();
 
   computeScrollBounds();
   renderIngredientButtons();
@@ -180,6 +181,29 @@ async function init() {
 function applyAppTexts() {
   dom.btnQuit.textContent = state.texts.app.labelQuit;
   dom.btnRetour.textContent = state.texts.app.labelBack;
+}
+
+// Mesure la hauteur de .text-zone pour un contenu HTML donné, sans laisser
+// de trace visible (on restaure le contenu précédent juste après).
+function measureTextZoneHeightFor(html) {
+  const prevHTML = dom.instructionText.innerHTML;
+  dom.instructionText.innerHTML = html;
+  const h = dom.textZone.offsetHeight;
+  dom.instructionText.innerHTML = prevHTML;
+  return h;
+}
+
+// Verrouille .text-zone sur la plus grande hauteur possible parmi tous les
+// prompts d'ingrédients et le texte de fin, pour que le panoramique en
+// dessous garde toujours la même taille quel que soit le nombre de lignes
+// du texte affiché.
+function lockTextZoneHeight() {
+  const candidates = Object.values(state.texts.ingredients)
+    .map(t => `${state.texts.app.promptPrefix}<strong>${t.title || ''}</strong>`);
+  candidates.push(state.texts.app.completionText);
+
+  const maxH = candidates.reduce((max, html) => Math.max(max, measureTextZoneHeightFor(html)), 0);
+  dom.textZone.style.minHeight = maxH + 'px';
 }
 
 async function loadConfig() {
