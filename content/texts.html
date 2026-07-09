@@ -3,48 +3,59 @@
   TEXTS — Ingredient Hunt (Diptyque)
   ═══════════════════════════════════════════════════════════════
 
-  This is the ONLY file that needs translating to produce a package
-  in another language. Each language = a copy of this file with the
-  same name (content/texts.html) and the same structure, delivered
-  in its own package together with the assets (panoramic image and
-  the product images for each ingredient).
+  This is the ONLY file to translate to produce a package in
+  another language. One language = one copy of this file with
+  the same name (content/texts.html) and the same structure,
+  placed in its own package alongside the assets (panoramic
+  image and the product images for each ingredient).
 
-  IMPORTANT — DO NOT TRANSLATE ANYTHING INSIDE COMMENTS.
-  Everything between <!-- and --> (including this whole block, and
-  every "INGREDIENT NN — ..." section header below) is an internal
-  comment for developers only. Leave all comments exactly as they
-  are, in English. Only translate the visible text found inside
-  <h1>, <p>, and <div> tags (see "Translation guidelines" below).
+  ── TRANSLATION INSTRUCTIONS ────────────────────────────────
 
-  Translation guidelines:
-  - Do not touch any attribute (data-key, data-ingredient, class).
-  - Translate all visible text (the content inside <h1>, <p>, and
-    <div> tags — not inside comments).
-  - The order of the <section data-ingredient="ing-XX"> blocks sets
-    the order in which ingredients are asked of the player — do not
-    reorder them without also updating content/config.json (the
-    "order" field for each ingredient).
-  - Each section can contain 1 or more <div class="product"> blocks
-    (one per product linked to that ingredient) — their number and
-    order must match the "products" array of the same ingredient in
-    content/config.json.
+  ✅ TRANSLATE the text content inside these tags only:
+       <h1 data-key="title">   → ingredient name
+       <div data-key="...">    → UI label or instruction
+       <p data-key="caption">  → product name linked to ingredient
+     This includes all visible words inside those tags.
+
+  ❌ DO NOT TRANSLATE OR MODIFY anything between <!-- and -->
+     IMPORTANT: this includes every section header such as
+     "INGREDIENT 01 — Rose" — these are internal notes for
+     developers and must be left exactly as they are.
+
+  ❌ DO NOT MODIFY HTML tags, attributes, or their order.
+     Leave these untouched:
+       <section data-ingredient="ing-01">   ← identifier, do not change
+       <h1 data-key="title">               ← attribute, do not change
+       <p data-key="caption">              ← attribute, do not change
+
+  ❌ DO NOT reorder the <section data-ingredient="ing-XX"> blocks.
+     The order in which they appear sets the order in which
+     ingredients are asked of the player.
+
+  ❌ DO NOT add or remove <div class="product"> blocks inside
+     a section. Their number must match the source file exactly.
+
   ═══════════════════════════════════════════════════════════════
 -->
 
 <!-- ───────────────────────────────────────────────
-     GENERAL APP TEXTS
+     DO NOT TRANSLATE — General app UI labels
      ─────────────────────────────────────────────── -->
 <section data-app-texts>
 
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <!-- Text shown before the name of the ingredient to find -->
   <div data-key="promptPrefix">Retrouvez l'ingrédient bienfaisant :</div>
 
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <!-- Text shown once all 13 ingredients have been found -->
   <div data-key="completionText">Bravo, vous avez identifié les 13 ingrédients bienfaisants présents dans la panoramique.</div>
 
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <!-- Exit button, shown once all ingredients have been found -->
   <div data-key="labelQuit">QUITTER</div>
 
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <!-- Button at the bottom of the ingredient modal, closes it -->
   <div data-key="labelBack">RETOUR</div>
 
@@ -52,124 +63,157 @@
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 01 identifier
      INGREDIENT 01 — Rose
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-01">
   <h1 data-key="title">Rose</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Cire à lèvres</p></div>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Baume riche apaisant</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 02 identifier
      INGREDIENT 02 — Lin
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-02">
   <h1 data-key="title">Lin</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Gelée lavante bienfaisante</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 03 identifier
      INGREDIENT 03 — Orge
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-03">
   <h1 data-key="title">Orge</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Huile légère embellissante</p></div>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Lait hydratant réconfortant</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 04 identifier
      INGREDIENT 04 — Noisette
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-04">
   <h1 data-key="title">Noisette</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Huile légère embellissante</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 05 identifier
      INGREDIENT 05 — Amande
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-05">
   <h1 data-key="title">Amande</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Pommade gommante vivifiante</p></div>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Huile-en-huile relaxante</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 06 identifier
      INGREDIENT 06 — Baies de genièvre
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-06">
   <h1 data-key="title">Baies de genièvre</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Pommade gommante vivifiante</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 07 identifier
      INGREDIENT 07 — Menthe
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-07">
   <h1 data-key="title">Menthe</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Bougie Le Matin</p></div>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Gelée lavante bienfaisante</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 08 identifier
      INGREDIENT 08 — Sauge
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-08">
   <h1 data-key="title">Sauge</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Bougie Le Matin</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 09 identifier
      INGREDIENT 09 — Figue de barbarie
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-09">
   <h1 data-key="title">Figue de barbarie</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Lait hydratant réconfortant</p></div>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Huile légère embellissante</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 10 identifier
      INGREDIENT 10 — Néroli
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-10">
   <h1 data-key="title">Néroli</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Lait hydratant réconfortant</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 11 identifier
      INGREDIENT 11 — Bergamote
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-11">
   <h1 data-key="title">Bergamote</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Gelée lavante bienfaisante</p></div>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Huile-en-huile relaxante</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 12 identifier
      INGREDIENT 12 — Jasmin
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-12">
   <h1 data-key="title">Jasmin</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Bougie Le Soir</p></div>
 </section>
 
 
 <!-- ───────────────────────────────────────────────
+     DO NOT TRANSLATE — Ingredient 13 identifier
      INGREDIENT 13 — Camomille
      ─────────────────────────────────────────────── -->
 <section data-ingredient="ing-13">
   <h1 data-key="title">Camomille</h1>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Bougie Le Soir</p></div>
+  <!-- DO NOT TRANSLATE — key name. Translate the text content only. -->
   <div class="product"><p data-key="caption">Baume riche apaisant</p></div>
 </section>
