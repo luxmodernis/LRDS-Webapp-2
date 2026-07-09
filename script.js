@@ -1,46 +1,4 @@
 /* ===========================
-   PASSWORD GATE
-   =========================== */
-const PW_CORRECT = 'LRDS';
-const PW_SESSION_KEY = 'lrds_unlocked';
-
-function initPasswordGate(onUnlock) {
-  const gate = document.getElementById('passwordGate');
-  const input = document.getElementById('pwInput');
-  const submitBtn = document.getElementById('pwSubmit');
-  const errorEl = document.getElementById('pwError');
-
-  if (sessionStorage.getItem(PW_SESSION_KEY) === '1') {
-    gate.classList.add('unlocked');
-    gate.addEventListener('transitionend', () => { gate.hidden = true; }, { once: true });
-    onUnlock();
-    return;
-  }
-
-  function tryUnlock() {
-    const val = input.value.trim().toUpperCase();
-    if (val === PW_CORRECT) {
-      sessionStorage.setItem(PW_SESSION_KEY, '1');
-      errorEl.textContent = '';
-      gate.classList.add('unlocked');
-      gate.addEventListener('transitionend', () => { gate.hidden = true; }, { once: true });
-      onUnlock();
-    } else {
-      errorEl.textContent = 'Mot de passe incorrect.';
-      input.value = '';
-      input.focus();
-      input.classList.remove('shake');
-      void input.offsetWidth;
-      input.classList.add('shake');
-    }
-  }
-
-  submitBtn.addEventListener('click', tryUnlock);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
-  input.focus();
-}
-
-/* ===========================
    SONS — Web Audio API (pas de fichiers, pas de dépendance)
    =========================== */
 let audioCtx = null;
@@ -616,7 +574,6 @@ function onResize() {
    =========================== */
 document.addEventListener('DOMContentLoaded', () => {
   if (window.ScormBridge) ScormBridge.initialize();
-  initPasswordGate(() => {});
   init();
 });
 
