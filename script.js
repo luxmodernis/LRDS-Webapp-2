@@ -95,6 +95,10 @@ async function init() {
   state.texts = await loadTexts();
   applyAppTexts();
 
+  // Précharge les images des modales en parallèle du chargement du
+  // panoramique, pour qu'elles soient en cache dès la première ouverture.
+  preloadModalImages();
+
   const panoramicSrc = state.config.panoramic || ASSETS.panoramic;
   await new Promise(resolve => {
     dom.panoramicImg.src = panoramicSrc;
@@ -131,8 +135,6 @@ async function init() {
   window.addEventListener('resize', onResize);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
   new ResizeObserver(onResize).observe(dom.panoramicWrapper);
-
-  preloadModalImages();
 }
 
 // Applique les textes généraux (hors modales) chargés depuis texts.html
