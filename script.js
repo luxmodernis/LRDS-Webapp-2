@@ -414,8 +414,14 @@ function goToPage1() {
 function checkCompletion() {
   const total = (state.config.modals || []).length;
   if (total === 0) return;
+
+  // Reporte la progression au LMS à chaque modale visitée, pour qu'elle
+  // soit connue même si l'utilisateur quitte avant d'avoir tout vu.
+  if (window.ScormBridge) ScormBridge.reportProgress(state.visited.size / total);
+
   if (state.visited.size >= total && !state.allVisited) {
     state.allVisited = true;
+    if (window.ScormBridge) ScormBridge.reportCompleted();
     showCompletionState();
   }
 }
@@ -554,7 +560,7 @@ function setupRetour() {
 
 function setupQuit() {
   dom.btnQuit.addEventListener('click', () => {
-    console.log('SCORM exit');
+    if (window.ScormBridge) ScormBridge.terminate();
   });
 }
 
@@ -568,9 +574,16 @@ function onResize() {
    START
    =========================== */
 document.addEventListener('DOMContentLoaded', () => {
+  if (window.ScormBridge) ScormBridge.initialize();
   initPasswordGate(() => {
     state.passwordUnlocked = true;
     maybeStartIntro();
   });
   init();
+});
+
+// Filet de sécurité : si l'utilisateur ferme l'onglet/app sans cliquer
+// sur QUITTER, on tente quand même de committer la dernière progression.
+window.addEventListener('pagehide', () => {
+  if (window.ScormBridge) ScormBridge.terminate();
 });
