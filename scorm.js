@@ -54,23 +54,31 @@
       initialize: function () {
         try { api.data.init(); return true; } catch (e) { return false; }
       },
+      // data.send() crée un nouveau "launch" à chaque appel — ne l'appeler
+      // qu'une seule fois, dans terminate(), jamais après chaque étape.
+      // commit() est donc un no-op pour ToM.
+      commit: function () { return true; },
       terminate: function () {
-        try { api.utils.close(); return true; } catch (e) { return false; }
-      },
-      commit: function () {
-        try { api.data.send(); return true; } catch (e) { return false; }
-      },
-      setProgress: function (ratio) {
         try {
-          var current = api.data.get('progress') || 0;
-          if (current < ratio) api.data.set('progress', ratio);
+          api.data.send();   // un seul envoi = un seul launch
+          api.utils.close();
           return true;
         } catch (e) { return false; }
       },
-      setCompleted: function (success) {
+      setProgress: function (ratio) {
+        // ToM attend un entier 0-100, pas un float 0-1
         try {
-          api.data.set('success', !!success);
-          api.data.set('progress', 1);
+          var value = Math.round(ratio * 100);
+          var current = api.data.get('progress') || 0;
+          if (value > current) api.data.set('progress', value);
+          return true;
+        } catch (e) { return false; }
+      },
+      setCompleted: function () {
+        try {
+          api.data.set('progress', 100);
+          api.data.set('success', true);
+          api.data.set('score', 100);
           return true;
         } catch (e) { return false; }
       },
