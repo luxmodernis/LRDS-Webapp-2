@@ -598,6 +598,10 @@ function setupRetour() {
 function setupQuit() {
   dom.btnQuit.addEventListener('click', () => {
     if (window.ScormBridge) ScormBridge.terminate();
+    // Ferme la fenêtre/webview après que le LMS a eu le temps de terminer
+    // (sur Teach on Mars, api.utils.close() est appelé via terminate(),
+    // mais window.close() sert de filet de sécurité si la détection échoue)
+    setTimeout(() => { try { window.close(); } catch (e) {} }, 300);
   });
 }
 

@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4096 1404" width="4096" height="1404">
-  <rect width="4096" height="1404" fill="#f5f0eb"/>
-  <rect x="2" y="2" width="4092" height="1400" fill="none" stroke="#ccc" stroke-width="4" stroke-dasharray="20,10"/>
-  <text x="2048" y="680" text-anchor="middle" font-family="Georgia, serif" font-size="80" fill="#999">PANORAMIQUE — Placer panoramic.jpg ici</text>
-  <text x="2048" y="780" text-anchor="middle" font-family="Georgia, serif" font-size="50" fill="#bbb">content/slides/panoramic.jpg (ratio 4096×1404)</text>
-</svg>
