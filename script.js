@@ -253,37 +253,34 @@ function updateProgress(x) {
 }
 
 /* ===========================
-   INTRO ANIMATION — pan lent 4s via RAF
+   INTRO ANIMATION — pan lent 5.5s via transition CSS
+   (compositeur GPU, insensible aux à-coups du thread JS)
    =========================== */
-function easeInOutCubic(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
-
 function playIntroAnimation() {
-  const fromX = state.maxScrollX;
-  setScrollX(fromX);
+  const duration = 5500;
+  const easing = 'cubic-bezier(0.65, 0, 0.35, 1)'; // équivalent ease-in-out-cubic
+
+  setScrollX(state.maxScrollX);
   state.introPanning = true;
   state.animating = true;
 
-  const duration = 5500;
-
   setTimeout(() => {
-    const startTime = performance.now();
+    const transition = `transform ${duration}ms ${easing}`;
+    dom.panoramicTrack.style.transition = transition;
+    dom.progressDot.style.transition = transition;
+    void dom.panoramicTrack.offsetWidth; // force le navigateur à figer l'état de départ
 
-    function frame(now) {
-      const elapsed = now - startTime;
-      const t = Math.min(1, elapsed / duration);
-      setScrollX(fromX * (1 - easeInOutCubic(t)));
+    setScrollX(0);
 
-      if (t < 1) {
-        requestAnimationFrame(frame);
-      } else {
-        state.introPanning = false;
-        showButtonsSequentially();
-      }
-    }
-
-    requestAnimationFrame(frame);
+    const onEnd = (e) => {
+      if (e.target !== dom.panoramicTrack) return;
+      dom.panoramicTrack.style.transition = '';
+      dom.progressDot.style.transition = '';
+      dom.panoramicTrack.removeEventListener('transitionend', onEnd);
+      state.introPanning = false;
+      showButtonsSequentially();
+    };
+    dom.panoramicTrack.addEventListener('transitionend', onEnd);
   }, 400);
 }
 
@@ -344,13 +341,11 @@ function getPlusBtn(id) {
 
 function markVisited(id) {
   state.visited.add(id);
-  setTimeout(() => {
-    const btn = getPlusBtn(id);
-    if (btn) {
-      btn.querySelector('.btn-circle').src = ASSETS.plusWhiteCircle;
-      btn.querySelector('.btn-icon').src = ASSETS.plusWhiteIcon;
-    }
-  }, 400);
+  const btn = getPlusBtn(id);
+  if (btn) {
+    btn.querySelector('.btn-circle').src = ASSETS.plusWhiteCircle;
+    btn.querySelector('.btn-icon').src = ASSETS.plusWhiteIcon;
+  }
 }
 
 /* ===========================
@@ -377,16 +372,22 @@ function openModal(id) {
   dom.modalLabelImg.src    = modal.label    || '';
   dom.modalPackshotImg.src = modal.packshot || '';
 
-  // Fade in après décodage image
-  const openOverlay = () => dom.modalOverlay.classList.add('open');
+  // Fade in après décodage image. Les changements visuels sur le diapo
+  // (icône du bouton, apparition de QUITTER) n'ont lieu qu'une fois la
+  // modale totalement opaque — sinon on les aperçoit par transparence
+  // pendant le fondu d'ouverture (0.3s, cf. .modal-overlay).
+  const openOverlay = () => {
+    dom.modalOverlay.classList.add('open');
+    setTimeout(() => {
+      markVisited(id);
+      checkCompletion();
+    }, 320);
+  };
   if (modal.image && dom.modalImg.decode) {
     dom.modalImg.decode().then(openOverlay).catch(openOverlay);
   } else {
     requestAnimationFrame(() => requestAnimationFrame(openOverlay));
   }
-
-  markVisited(id);
-  checkCompletion();
 }
 
 function closeModal() {
