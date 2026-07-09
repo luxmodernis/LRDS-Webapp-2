@@ -8,54 +8,68 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      height: 100%;
-      overflow: hidden;
+      min-height: 100%;
       background: #f5f5f5;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
-    /* Layout: phone frame + panel */
+    /* Layout: diaporama pleine largeur en haut, liste en dessous */
     #layout {
       display: flex;
-      height: 100dvh;
-      align-items: stretch;
-    }
-
-    /* Simulated phone frame */
-    #phone-frame {
-      flex: 0 0 auto;
-      width: 393px;
-      height: 100dvh;
-      background: #fff;
-      display: flex;
       flex-direction: column;
-      overflow: hidden;
-      box-shadow: 4px 0 20px rgba(0,0,0,0.12);
-      position: relative;
+      min-height: 100dvh;
     }
 
-    /* Panoramic fills the phone */
-    #panoramic-section {
-      flex: 1 1 auto;
+    /* ─── Diaporama (pleine largeur, image entière visible) ─── */
+    #diapo-section {
+      flex: 0 0 auto;
       position: relative;
-      overflow: hidden;
-      cursor: grab;
+      width: 100%;
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
-    #panoramic-section.is-dragging-pan { cursor: grabbing; }
 
     #panoramic-track {
       position: relative;
-      height: 100%;
+      width: 100%;
+      line-height: 0;
     }
 
     #panoramic-img {
-      height: 100%;
-      width: auto;
-      max-width: none;
       display: block;
+      width: 100%;
+      height: auto;
       pointer-events: none;
       user-select: none;
       -webkit-user-drag: none;
+    }
+
+    /* Rectangle représentant la largeur d'un écran mobile (393px),
+       déplaçable pour prévisualiser ce qu'un téléphone verrait à cet
+       endroit du diaporama. */
+    #mobile-frame {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      background: rgba(37, 99, 235, 0.08);
+      border: 2px dashed #2563eb;
+      cursor: grab;
+      z-index: 15;
+    }
+    #mobile-frame.dragging { cursor: grabbing; }
+    #mobile-frame .mobile-frame-label {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2563eb;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     /* Plus buttons */
@@ -72,12 +86,6 @@
     }
     .plus-btn.dragging { cursor: grabbing; opacity: 0.8; z-index: 20; }
     .plus-btn img { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-    .plus-btn .btn-icon {
-      position: absolute;
-      top: 28.33%; left: 28.33%;
-      width: 43.34%; height: 43.34%;
-      object-fit: contain;
-    }
     .plus-btn .btn-circle {
       position: absolute;
       top: 0; left: 0;
@@ -100,14 +108,16 @@
       pointer-events: none;
     }
 
-    /* Side panel */
+    /* ─── Panel (liste + export), sous le diaporama ─── */
     #panel {
       flex: 1 1 auto;
       display: flex;
       flex-direction: column;
-      padding: 24px;
-      overflow-y: auto;
-      gap: 16px;
+      padding: 20px 24px 32px;
+      gap: 14px;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
     }
 
     #panel h1 {
@@ -119,22 +129,13 @@
       font-size: 13px;
       color: #666;
       line-height: 1.5;
+      max-width: 900px;
     }
 
-    /* Scroll controls */
-    #scroll-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    #scroll-controls label { font-size: 12px; color: #555; }
-    #scroll-range { flex: 1; }
-    #scroll-pct { font-size: 12px; color: #333; min-width: 38px; text-align: right; }
-
-    /* Position list */
+    /* Position list — grille pour tout voir sans scroller */
     #positions-list {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 8px;
     }
 
@@ -151,18 +152,19 @@
       transition: border-color 0.15s;
     }
     .pos-row:hover { border-color: #999; }
-    .pos-row.active { border-color: #000; background: #f9f9f9; }
+    .pos-row.active { border-color: #2563eb; background: #f5f8ff; }
 
     .pos-order {
       font-family: 'SF Mono', 'Fira Mono', monospace;
       font-size: 12px;
       color: #999;
-      min-width: 20px;
+      min-width: 18px;
     }
     .pos-names {
       display: flex;
       flex-direction: column;
-      min-width: 130px;
+      min-width: 0;
+      flex: 1;
     }
     .pos-name {
       font-weight: 600;
@@ -190,10 +192,10 @@
     }
     .pos-coords {
       font-family: 'SF Mono', 'Fira Mono', monospace;
-      font-size: 12px;
+      font-size: 11px;
       color: #444;
-      flex: 1;
       text-align: right;
+      white-space: nowrap;
     }
     .pos-dot {
       width: 10px; height: 10px;
@@ -201,7 +203,7 @@
       background: #ccc;
       flex-shrink: 0;
     }
-    .pos-row.active .pos-dot { background: #000; }
+    .pos-row.active .pos-dot { background: #2563eb; }
 
     /* Export area */
     #export-area {
@@ -268,66 +270,27 @@
       display: block;
       margin-top: 4px;
     }
-
-    /* Progress strip at bottom of phone */
-    #progress-strip {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 0;
-      background: #fff;
-    }
-    #progress-track {
-      position: relative;
-      width: 290px;
-      height: 8px;
-    }
-    #progress-track::before {
-      content: '';
-      position: absolute;
-      top: 50%; left: 0; right: 0;
-      height: 1px;
-      background: #000;
-      transform: translateY(-50%);
-    }
-    #progress-dot {
-      position: absolute;
-      top: 0; left: 0;
-      width: 40px; height: 8px;
-      background: #000;
-      border-radius: 8px;
-    }
   </style>
 </head>
 <body>
 
 <div id="layout">
 
-  <!-- Phone frame -->
-  <div id="phone-frame">
-    <div id="panoramic-section">
-      <div id="panoramic-track">
-        <img id="panoramic-img" src="" alt="Panoramique" draggable="false">
+  <!-- Diaporama pleine largeur -->
+  <div id="diapo-section">
+    <div id="panoramic-track">
+      <img id="panoramic-img" src="" alt="Panoramique" draggable="false">
+      <div id="mobile-frame">
+        <span class="mobile-frame-label">393px — vue mobile</span>
       </div>
-    </div>
-    <div id="progress-strip">
-      <div id="progress-track">
-        <div id="progress-dot"></div>
-      </div>
+      <!-- Plus buttons injected here -->
     </div>
   </div>
 
-  <!-- Side panel -->
+  <!-- Panel sous le diaporama -->
   <div id="panel">
     <h1>Éditeur de positions</h1>
-    <p class="hint">Fais glisser les boutons <strong>?</strong> sur le diaporama pour ajuster leur position, et modifie le nom de chaque ingrédient directement dans la liste ci-dessous. Le JSON ci-dessous se met à jour en temps réel.</p>
-
-    <div id="scroll-controls">
-      <label>Scroll panoramique</label>
-      <input type="range" id="scroll-range" min="0" max="100" value="0">
-      <span id="scroll-pct">0%</span>
-    </div>
+    <p class="hint">Fais glisser les boutons <strong>?</strong> sur le diaporama pour ajuster leur position, et modifie le nom de chaque ingrédient directement dans la liste ci-dessous. Le rectangle bleu représente la largeur d'un écran mobile (393px) — fais-le glisser pour prévisualiser ce qui serait visible à un endroit donné. Le JSON en bas se met à jour en temps réel.</p>
 
     <div id="positions-list"></div>
 
@@ -350,22 +313,20 @@ const ASSETS = {
   ingredientUnfound: '/assets/ingredient-unfound.svg',
 };
 
+// Ratio de l'écran mobile simulé (largeur/hauteur) — même valeur que le
+// viewport iPhone utilisé pour l'app réelle.
+const MOBILE_RATIO = 393 / 852;
+
 let config = null;
 let names = {}; // { id: "Rose" }
 let positions = []; // [{id, order, name, x, y}]
-let scrollX = 0;
-let maxScrollX = 0;
-let isPanDragging = false;
-let panStartX = 0;
-let panScrollX = 0;
+let isFrameDragging = false;
+let frameDragStartX = 0;
+let frameStartLeft = 0;
 
 const track = document.getElementById('panoramic-track');
 const img   = document.getElementById('panoramic-img');
-const section = document.getElementById('panoramic-section');
-const progressDot = document.getElementById('progress-dot');
-const progressTrack = document.getElementById('progress-track');
-const scrollRange = document.getElementById('scroll-range');
-const scrollPct = document.getElementById('scroll-pct');
+const mobileFrame = document.getElementById('mobile-frame');
 const positionsList = document.getElementById('positions-list');
 const jsonOutput = document.getElementById('json-output');
 
@@ -396,9 +357,6 @@ async function init() {
     else { img.onload = resolve; img.onerror = resolve; }
   });
 
-  track.style.width = img.offsetWidth + 'px';
-  maxScrollX = Math.max(0, img.offsetWidth - section.offsetWidth);
-
   // Init positions from config, triées dans l'ordre du jeu
   positions = [...config.ingredients]
     .sort((a, b) => (a.order || 0) - (b.order || 0))
@@ -413,9 +371,8 @@ async function init() {
   renderButtons();
   renderList();
   updateJSON();
-  setupPanDrag();
-  setupScrollRange();
-  window.addEventListener('resize', onResize);
+  setupMobileFrame();
+  window.addEventListener('resize', syncMobileFrameWidth);
 }
 
 /* ─── Buttons ─── */
@@ -467,7 +424,6 @@ function setupBtnDrag(btn, pos) {
   function onMove(e) {
     if (e.cancelable) e.preventDefault();
     const client = e.touches ? e.touches[0] : e;
-    const trackRect = track.getBoundingClientRect();
 
     const dx = client.clientX - startClientX;
     const dy = client.clientY - startClientY;
@@ -497,52 +453,54 @@ function setupBtnDrag(btn, pos) {
   btn.addEventListener('touchstart', onStart, { passive: false });
 }
 
-/* ─── Panoramic pan ─── */
-function setupPanDrag() {
-  section.addEventListener('mousedown', e => {
-    if (e.target.closest('.plus-btn')) return;
-    isPanDragging = true;
-    panStartX = e.clientX;
-    panScrollX = scrollX;
-    section.classList.add('is-dragging-pan');
-  });
-  window.addEventListener('mousemove', e => {
-    if (!isPanDragging) return;
-    setScrollX(panScrollX + (panStartX - e.clientX));
-  });
-  window.addEventListener('mouseup', () => {
-    isPanDragging = false;
-    section.classList.remove('is-dragging-pan');
-  });
-
-  section.addEventListener('touchstart', e => {
-    if (e.target.closest('.plus-btn')) return;
-    isPanDragging = true;
-    panStartX = e.touches[0].clientX;
-    panScrollX = scrollX;
-  }, { passive: true });
-  window.addEventListener('touchmove', e => {
-    if (!isPanDragging) return;
-    setScrollX(panScrollX + (panStartX - e.touches[0].clientX));
-  }, { passive: true });
-  window.addEventListener('touchend', () => { isPanDragging = false; });
+/* ─── Rectangle "vue mobile" ─── */
+function syncMobileFrameWidth() {
+  const w = track.offsetHeight * MOBILE_RATIO;
+  mobileFrame.style.width = w + 'px';
+  const maxLeft = track.offsetWidth - w;
+  const currentLeft = parseFloat(mobileFrame.style.left) || 0;
+  mobileFrame.style.left = Math.max(0, Math.min(maxLeft, currentLeft)) + 'px';
 }
 
-function setScrollX(x) {
-  scrollX = Math.max(0, Math.min(maxScrollX, x));
-  track.style.transform = `translateX(${-scrollX}px)`;
-  const ratio = maxScrollX > 0 ? scrollX / maxScrollX : 0;
-  const maxLeft = progressTrack.offsetWidth - progressDot.offsetWidth;
-  progressDot.style.left = (ratio * maxLeft) + 'px';
-  scrollRange.value = Math.round(ratio * 100);
-  scrollPct.textContent = Math.round(ratio * 100) + '%';
+function setMobileFrameLeft(left) {
+  const maxLeft = track.offsetWidth - mobileFrame.offsetWidth;
+  mobileFrame.style.left = Math.max(0, Math.min(maxLeft, left)) + 'px';
 }
 
-function setupScrollRange() {
-  scrollRange.addEventListener('input', () => {
-    const ratio = scrollRange.value / 100;
-    setScrollX(ratio * maxScrollX);
-  });
+function centerMobileFrameOn(xPercent) {
+  const targetLeft = (xPercent / 100) * track.offsetWidth - mobileFrame.offsetWidth / 2;
+  setMobileFrameLeft(targetLeft);
+}
+
+function setupMobileFrame() {
+  syncMobileFrameWidth();
+  setMobileFrameLeft(0);
+
+  function onStart(e) {
+    e.preventDefault();
+    isFrameDragging = true;
+    mobileFrame.classList.add('dragging');
+    const client = e.touches ? e.touches[0] : e;
+    frameDragStartX = client.clientX;
+    frameStartLeft = parseFloat(mobileFrame.style.left) || 0;
+  }
+  function onMove(e) {
+    if (!isFrameDragging) return;
+    if (e.cancelable) e.preventDefault();
+    const client = e.touches ? e.touches[0] : e;
+    setMobileFrameLeft(frameStartLeft + (client.clientX - frameDragStartX));
+  }
+  function onEnd() {
+    isFrameDragging = false;
+    mobileFrame.classList.remove('dragging');
+  }
+
+  mobileFrame.addEventListener('mousedown', onStart);
+  mobileFrame.addEventListener('touchstart', onStart, { passive: false });
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('mouseup', onEnd);
+  window.addEventListener('touchend', onEnd);
 }
 
 /* ─── List & JSON ─── */
@@ -561,9 +519,9 @@ function renderList() {
         <input class="pos-name" type="text" value="${(pos.name || '').replace(/"/g, '&quot;')}" placeholder="(sans nom)">
         <span class="pos-id">${pos.id}</span>
       </span>
-      <span class="pos-coords">x: ${pos.x.toFixed(2)}%  y: ${pos.y.toFixed(2)}%</span>
+      <span class="pos-coords">x: ${pos.x.toFixed(2)}%<br>y: ${pos.y.toFixed(2)}%</span>
     `;
-    row.addEventListener('click', e => { if (e.target.tagName !== 'INPUT') scrollToBtn(pos); });
+    row.addEventListener('click', e => { if (e.target.tagName !== 'INPUT') centerMobileFrameOn(pos.x); });
 
     const nameInput = row.querySelector('.pos-name');
     nameInput.addEventListener('click', e => e.stopPropagation());
@@ -584,8 +542,8 @@ function updateList() {
   positions.forEach(pos => {
     const row = positionsList.querySelector(`[data-id="${pos.id}"]`);
     if (row) {
-      row.querySelector('.pos-coords').textContent =
-        `x: ${pos.x.toFixed(2)}%  y: ${pos.y.toFixed(2)}%`;
+      row.querySelector('.pos-coords').innerHTML =
+        `x: ${pos.x.toFixed(2)}%<br>y: ${pos.y.toFixed(2)}%`;
     }
   });
 }
@@ -595,12 +553,6 @@ function updateJSON() {
     `  { "id": "${p.id}", "name": "${(p.name || '').replace(/"/g, '\\"')}", "position": { "x": ${p.x.toFixed(2)}, "y": ${p.y.toFixed(2)} } }`
   ).join(',\n');
   jsonOutput.value = `[\n${out}\n]`;
-}
-
-function scrollToBtn(pos) {
-  // Scroll so the button is visible
-  const targetScrollX = (pos.x / 100) * track.offsetWidth - section.offsetWidth / 2;
-  setScrollX(targetScrollX);
 }
 
 // ─── Valider (local) / Copier (Vercel) ───
@@ -669,12 +621,6 @@ copyBtn.addEventListener('click', () => {
     setTimeout(() => { copyConfirm.textContent = ''; }, 2000);
   });
 });
-
-function onResize() {
-  track.style.width = img.offsetWidth + 'px';
-  maxScrollX = Math.max(0, img.offsetWidth - section.offsetWidth);
-  setScrollX(scrollX);
-}
 
 init();
 </script>
