@@ -11,6 +11,17 @@ const path = require('path');
 const PORT    = 3333;
 const ROOT    = path.join(__dirname, '..'); // racine du projet
 const CONFIG  = path.join(ROOT, 'content', 'config.json');
+const TEXTS   = path.join(ROOT, 'content', 'texts.html');
+
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Échappe le texte saisi pour un usage sûr en tant que contenu HTML
+// (le nom d'ingrédient est inséré tel quel dans <h1 data-key="title">).
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -56,6 +67,38 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: true, saved: newPositions.length }));
         console.log(`✓ ${newPositions.length} positions sauvegardées dans config.json`);
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // ── API : sauvegarde des noms d'ingrédients (dans texts.html) ───────────
+  if (req.method === 'POST' && req.url === '/api/save-names') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const newNames = JSON.parse(body); // [{id, title}, ...]
+        let html = fs.readFileSync(TEXTS, 'utf8');
+        let saved = 0;
+
+        newNames.forEach(({ id, title }) => {
+          const re = new RegExp(
+            `(<section data-ingredient="${escapeRegExp(id)}">[\\s\\S]*?<h1 data-key="title">)([\\s\\S]*?)(</h1>)`
+          );
+          if (re.test(html)) {
+            html = html.replace(re, (_, before, _old, after) => before + escapeHtml(title.trim()) + after);
+            saved++;
+          }
+        });
+
+        fs.writeFileSync(TEXTS, html, 'utf8');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, saved }));
+        console.log(`✓ ${saved} noms d'ingrédients sauvegardés dans texts.html`);
       } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: e.message }));

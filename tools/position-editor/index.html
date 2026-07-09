@@ -168,7 +168,22 @@
       font-weight: 600;
       color: #111;
       text-transform: uppercase;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin: -2px -4px;
+      background: transparent;
+      font-family: inherit;
+      font-size: inherit;
+      width: 100%;
     }
+    .pos-name:hover { border-color: #ddd; }
+    .pos-name:focus {
+      outline: none;
+      border-color: #000;
+      background: #fff;
+    }
+    .pos-name.dirty { color: #b8860b; }
     .pos-id {
       font-size: 11px;
       color: #999;
@@ -306,7 +321,7 @@
   <!-- Side panel -->
   <div id="panel">
     <h1>Éditeur de positions</h1>
-    <p class="hint">Fais glisser les boutons <strong>+</strong> sur le diaporama pour ajuster leur position. Le JSON ci-dessous se met à jour en temps réel.</p>
+    <p class="hint">Fais glisser les boutons <strong>?</strong> sur le diaporama pour ajuster leur position, et modifie le nom de chaque ingrédient directement dans la liste ci-dessous. Le JSON ci-dessous se met à jour en temps réel.</p>
 
     <div id="scroll-controls">
       <label>Scroll panoramique</label>
@@ -531,6 +546,8 @@ function setupScrollRange() {
 }
 
 /* ─── List & JSON ─── */
+let namesDirty = false;
+
 function renderList() {
   positionsList.innerHTML = '';
   positions.forEach(pos => {
@@ -541,12 +558,24 @@ function renderList() {
       <span class="pos-dot"></span>
       <span class="pos-order">${pos.order}</span>
       <span class="pos-names">
-        <span class="pos-name">${pos.name || '(sans nom)'}</span>
+        <input class="pos-name" type="text" value="${(pos.name || '').replace(/"/g, '&quot;')}" placeholder="(sans nom)">
         <span class="pos-id">${pos.id}</span>
       </span>
       <span class="pos-coords">x: ${pos.x.toFixed(2)}%  y: ${pos.y.toFixed(2)}%</span>
     `;
-    row.addEventListener('click', () => scrollToBtn(pos));
+    row.addEventListener('click', e => { if (e.target.tagName !== 'INPUT') scrollToBtn(pos); });
+
+    const nameInput = row.querySelector('.pos-name');
+    nameInput.addEventListener('click', e => e.stopPropagation());
+    nameInput.addEventListener('input', () => {
+      pos.name = nameInput.value;
+      namesDirty = true;
+      nameInput.classList.add('dirty');
+      const label = track.querySelector(`.plus-btn[data-id="${pos.id}"] .btn-label`);
+      if (label) label.textContent = `${pos.order}. ${pos.name || pos.id}`;
+      updateJSON();
+    });
+
     positionsList.appendChild(row);
   });
 }
@@ -563,7 +592,7 @@ function updateList() {
 
 function updateJSON() {
   const out = positions.map(p =>
-    `  { "id": "${p.id}", "position": { "x": ${p.x.toFixed(2)}, "y": ${p.y.toFixed(2)} } }`
+    `  { "id": "${p.id}", "name": "${(p.name || '').replace(/"/g, '\\"')}", "position": { "x": ${p.x.toFixed(2)}, "y": ${p.y.toFixed(2)} } }`
   ).join(',\n');
   jsonOutput.value = `[\n${out}\n]`;
 }
@@ -585,6 +614,8 @@ const isLocal = location.hostname === 'localhost' || location.hostname === '127.
 if (!isLocal) {
   saveBtn.textContent = 'Copier le JSON';
   saveBtn.title = 'Serveur local non disponible — copie manuelle';
+} else {
+  saveBtn.textContent = 'Enregistrer positions + noms';
 }
 
 saveBtn.addEventListener('click', async () => {
@@ -594,17 +625,27 @@ saveBtn.addEventListener('click', async () => {
     saveConfirm.className = '';
     saveConfirm.textContent = 'Sauvegarde…';
     try {
-      const res = await fetch('/api/save-positions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(positions),
-      });
-      const data = await res.json();
-      if (data.ok) {
+      const [posRes, namesRes] = await Promise.all([
+        fetch('/api/save-positions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(positions),
+        }),
+        fetch('/api/save-names', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(positions.map(p => ({ id: p.id, title: p.name }))),
+        }),
+      ]);
+      const posData = await posRes.json();
+      const namesData = await namesRes.json();
+      if (posData.ok && namesData.ok) {
         saveConfirm.className = 'ok';
-        saveConfirm.textContent = `✓ ${data.saved} positions sauvegardées dans config.json`;
+        saveConfirm.textContent = `✓ ${posData.saved} positions + ${namesData.saved} noms sauvegardés`;
+        namesDirty = false;
+        document.querySelectorAll('.pos-name.dirty').forEach(el => el.classList.remove('dirty'));
       } else {
-        throw new Error(data.error);
+        throw new Error(posData.error || namesData.error);
       }
     } catch (e) {
       saveConfirm.className = 'err';

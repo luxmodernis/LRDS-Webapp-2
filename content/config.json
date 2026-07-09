@@ -4,7 +4,10 @@
     {
       "id": "ing-01",
       "order": 1,
-      "position": { "x": 18.23, "y": 53.29 },
+      "position": {
+        "x": 18.23,
+        "y": 53.29
+      },
       "products": [
         "content/modals/ing-01/product-1.png",
         "content/modals/ing-01/product-2.png"
@@ -13,7 +16,10 @@
     {
       "id": "ing-02",
       "order": 2,
-      "position": { "x": 8.44, "y": 45.98 },
+      "position": {
+        "x": 8.44,
+        "y": 45.98
+      },
       "products": [
         "content/modals/ing-02/product-1.png"
       ]
@@ -21,7 +27,10 @@
     {
       "id": "ing-03",
       "order": 3,
-      "position": { "x": 6.31, "y": 17.66 },
+      "position": {
+        "x": 6.31,
+        "y": 17.66
+      },
       "products": [
         "content/modals/ing-03/product-1.png",
         "content/modals/ing-03/product-2.png"
@@ -30,7 +39,10 @@
     {
       "id": "ing-04",
       "order": 4,
-      "position": { "x": 17.7, "y": 12.19 },
+      "position": {
+        "x": 17.7,
+        "y": 12.19
+      },
       "products": [
         "content/modals/ing-04/product-1.png"
       ]
@@ -38,7 +50,10 @@
     {
       "id": "ing-05",
       "order": 5,
-      "position": { "x": 36.87, "y": 30.61 },
+      "position": {
+        "x": 36.87,
+        "y": 30.61
+      },
       "products": [
         "content/modals/ing-05/product-1.png",
         "content/modals/ing-05/product-2.png"
@@ -47,7 +62,10 @@
     {
       "id": "ing-06",
       "order": 6,
-      "position": { "x": 37.49, "y": 78.78 },
+      "position": {
+        "x": 37.49,
+        "y": 78.78
+      },
       "products": [
         "content/modals/ing-06/product-1.png"
       ]
@@ -55,7 +73,10 @@
     {
       "id": "ing-07",
       "order": 7,
-      "position": { "x": 57.09, "y": 64.87 },
+      "position": {
+        "x": 57.09,
+        "y": 64.87
+      },
       "products": [
         "content/modals/ing-07/product-1.png",
         "content/modals/ing-07/product-2.png"
@@ -64,7 +85,10 @@
     {
       "id": "ing-08",
       "order": 8,
-      "position": { "x": 86.13, "y": 76.81 },
+      "position": {
+        "x": 86.13,
+        "y": 76.81
+      },
       "products": [
         "content/modals/ing-08/product-1.png"
       ]
@@ -72,7 +96,10 @@
     {
       "id": "ing-09",
       "order": 9,
-      "position": { "x": 91.7, "y": 21.66 },
+      "position": {
+        "x": 91.7,
+        "y": 21.66
+      },
       "products": [
         "content/modals/ing-09/product-1.png",
         "content/modals/ing-09/product-2.png"
@@ -81,7 +108,10 @@
     {
       "id": "ing-10",
       "order": 10,
-      "position": { "x": 27.5, "y": 65.4 },
+      "position": {
+        "x": 27.5,
+        "y": 65.4
+      },
       "products": [
         "content/modals/ing-10/product-1.png"
       ]
@@ -89,7 +119,10 @@
     {
       "id": "ing-11",
       "order": 11,
-      "position": { "x": 48.2, "y": 15.8 },
+      "position": {
+        "x": 48.2,
+        "y": 15.8
+      },
       "products": [
         "content/modals/ing-11/product-1.png",
         "content/modals/ing-11/product-2.png"
@@ -98,7 +131,10 @@
     {
       "id": "ing-12",
       "order": 12,
-      "position": { "x": 67.9, "y": 40.3 },
+      "position": {
+        "x": 67.9,
+        "y": 40.3
+      },
       "products": [
         "content/modals/ing-12/product-1.png"
       ]
@@ -106,7 +142,10 @@
     {
       "id": "ing-13",
       "order": 13,
-      "position": { "x": 79.6, "y": 55.2 },
+      "position": {
+        "x": 79.6,
+        "y": 55.2
+      },
       "products": [
         "content/modals/ing-13/product-1.png",
         "content/modals/ing-13/product-2.png"
