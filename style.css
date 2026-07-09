@@ -279,7 +279,7 @@ img {
 /* Titre fixe */
 .modal-title-wrap {
   flex: 0 0 auto;
-  padding: 40px 40px 0;
+  padding: clamp(20px, 4vh, 40px) 32px 0;
   text-align: center;
 }
 .modal-title {
@@ -292,16 +292,20 @@ img {
 
 /* ===========================
    MODAL PRODUCTS — liste verticale image + légende
+   object-fit: contain préserve les proportions naturelles de chaque
+   produit (un pot court reste court, une bouteille haute reste haute).
+   La hauteur max des images varie selon qu'il y a 1 ou 2 produits,
+   via :has(), pour que tout tienne sans scroll sur mobile.
    =========================== */
 .modal-products {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  justify-content: space-evenly;
   align-items: center;
-  gap: 40px;
-  padding: 40px 32px;
+  padding: 0 32px;
 }
 .modal-product {
   flex: 0 0 auto;
@@ -312,16 +316,25 @@ img {
   text-align: center;
 }
 .modal-product-img {
-  width: 150px;
-  object-fit: contain;
   display: block;
+  width: auto;
+  max-width: 72%;
+  object-fit: contain;
+  /* 1 produit : image grande */
+  max-height: 52vh;
+}
+/* 2 produits : max-height et max-width réduits pour que les deux tiennent
+   et qu'aucun produit ne domine la vue même s'il est de format large */
+.modal-products:has(.modal-product ~ .modal-product) .modal-product-img {
+  max-height: 27vh;
+  max-width: 56%;
 }
 .modal-product-caption {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.2;
   text-transform: uppercase;
   color: #000;
-  max-width: 174px;
+  max-width: 200px;
 }
 
 /* ===========================
@@ -331,7 +344,7 @@ img {
   flex: 0 0 auto;
   display: flex;
   justify-content: center;
-  padding: 6px 0 clamp(12px, 2.5vh, 22px);
+  padding: 4px 0 clamp(14px, 3vh, 28px);
 }
 
 /* ===========================
