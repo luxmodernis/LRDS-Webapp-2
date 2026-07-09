@@ -93,19 +93,31 @@
       object-fit: contain;
     }
 
-    /* Label on each button */
+    /* Label on each button — au-dessus de tout le reste, contraste fort */
     .plus-btn .btn-label {
       position: absolute;
-      bottom: calc(100% + 4px);
+      bottom: calc(100% + 6px);
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.75);
-      color: #fff;
-      font-size: 10px;
+      background: #fff;
+      color: #000;
+      font-size: 12px;
+      font-weight: 700;
       white-space: nowrap;
-      padding: 2px 6px;
+      padding: 3px 8px;
       border-radius: 4px;
+      border: 1.5px solid #000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
       pointer-events: none;
+      z-index: 30;
+    }
+    .plus-btn:hover, .plus-btn.dragging {
+      z-index: 40;
+    }
+    .plus-btn:hover .btn-label, .plus-btn.dragging .btn-label {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
     }
 
     /* ─── Panel (liste + export), sous le diaporama ─── */
@@ -149,17 +161,21 @@
       padding: 8px 12px;
       font-size: 13px;
       cursor: pointer;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, opacity 0.15s;
     }
     .pos-row:hover { border-color: #999; }
     .pos-row.active { border-color: #2563eb; background: #f5f8ff; }
+    .pos-row.dragging { opacity: 0.4; }
+    .pos-row.drop-target { border-color: #2563eb; border-style: dashed; }
 
     .pos-order {
       font-family: 'SF Mono', 'Fira Mono', monospace;
       font-size: 12px;
       color: #999;
       min-width: 18px;
+      cursor: grab;
     }
+    .pos-order:active { cursor: grabbing; }
     .pos-names {
       display: flex;
       flex-direction: column;
@@ -514,7 +530,7 @@ function renderList() {
     row.dataset.id = pos.id;
     row.innerHTML = `
       <span class="pos-dot"></span>
-      <span class="pos-order">${pos.order}</span>
+      <span class="pos-order" title="Glisser pour changer l'ordre">${pos.order}</span>
       <span class="pos-names">
         <input class="pos-name" type="text" value="${(pos.name || '').replace(/"/g, '&quot;')}" placeholder="(sans nom)">
         <span class="pos-id">${pos.id}</span>
@@ -534,8 +550,75 @@ function renderList() {
       updateJSON();
     });
 
+    setupRowReorderDrag(row, pos);
+
     positionsList.appendChild(row);
   });
+}
+
+// Glisser la pastille "ordre" d'une ligne pour la déplacer dans la liste
+// et réassigner l'ordre d'appel de tous les ingrédients en conséquence.
+function setupRowReorderDrag(row, pos) {
+  const handle = row.querySelector('.pos-order');
+  let currentDropTarget = null;
+
+  function onStart(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    row.classList.add('dragging');
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('mouseup', onEnd);
+    window.addEventListener('touchend', onEnd);
+  }
+
+  function onMove(e) {
+    if (e.cancelable) e.preventDefault();
+    const client = e.touches ? e.touches[0] : e;
+    const el = document.elementFromPoint(client.clientX, client.clientY);
+    const targetRow = el?.closest('.pos-row');
+
+    if (currentDropTarget && currentDropTarget !== targetRow) {
+      currentDropTarget.classList.remove('drop-target');
+      currentDropTarget = null;
+    }
+    if (targetRow && targetRow !== row) {
+      targetRow.classList.add('drop-target');
+      currentDropTarget = targetRow;
+    }
+  }
+
+  function onEnd() {
+    row.classList.remove('dragging');
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('touchmove', onMove);
+    window.removeEventListener('mouseup', onEnd);
+    window.removeEventListener('touchend', onEnd);
+
+    if (currentDropTarget) {
+      currentDropTarget.classList.remove('drop-target');
+      reorderIngredient(pos.id, currentDropTarget.dataset.id);
+      currentDropTarget = null;
+    }
+  }
+
+  handle.addEventListener('mousedown', onStart);
+  handle.addEventListener('touchstart', onStart, { passive: false });
+}
+
+function reorderIngredient(draggedId, targetId) {
+  if (draggedId === targetId) return;
+  const fromIndex = positions.findIndex(p => p.id === draggedId);
+  const toIndex = positions.findIndex(p => p.id === targetId);
+  if (fromIndex === -1 || toIndex === -1) return;
+
+  const [moved] = positions.splice(fromIndex, 1);
+  positions.splice(toIndex, 0, moved);
+  positions.forEach((p, i) => { p.order = i + 1; });
+
+  renderList();
+  renderButtons();
+  updateJSON();
 }
 
 function updateList() {
@@ -550,7 +633,7 @@ function updateList() {
 
 function updateJSON() {
   const out = positions.map(p =>
-    `  { "id": "${p.id}", "name": "${(p.name || '').replace(/"/g, '\\"')}", "position": { "x": ${p.x.toFixed(2)}, "y": ${p.y.toFixed(2)} } }`
+    `  { "id": "${p.id}", "order": ${p.order}, "name": "${(p.name || '').replace(/"/g, '\\"')}", "position": { "x": ${p.x.toFixed(2)}, "y": ${p.y.toFixed(2)} } }`
   ).join(',\n');
   jsonOutput.value = `[\n${out}\n]`;
 }

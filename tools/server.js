@@ -52,14 +52,15 @@ const server = http.createServer((req, res) => {
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
       try {
-        const newPositions = JSON.parse(body); // [{id, x, y}, ...]
+        const newPositions = JSON.parse(body); // [{id, order, x, y}, ...]
         const config = JSON.parse(fs.readFileSync(CONFIG, 'utf8'));
 
-        newPositions.forEach(({ id, x, y }) => {
+        newPositions.forEach(({ id, order, x, y }) => {
           const ingredient = config.ingredients.find(m => m.id === id);
           if (ingredient) {
             ingredient.position.x = x;
             ingredient.position.y = y;
+            if (order != null) ingredient.order = order;
           }
         });
 
