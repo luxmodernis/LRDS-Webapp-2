@@ -373,7 +373,6 @@ function onGuess(id, btn) {
   if (!target) return;
 
   if (id === target.id) {
-    markFound(id);
     playSuccessSound();
     openModal(id);
   } else {
@@ -424,15 +423,26 @@ function openModal(id) {
   });
 
   dom.modalOverlay.classList.add('open');
+
+  // Le bouton "?" ne passe en coche qu'une fois la modale totalement
+  // opaque, pour ne pas apercevoir le changement par transparence pendant
+  // le fondu d'ouverture (0.3s, cf. .modal-overlay).
+  setTimeout(() => { markFound(id); }, 320);
 }
 
 function closeModal() {
+  const closedId = state.currentModalId;
+
+  // Le prompt suivant (ou l'écran de fin) est préparé pendant que la
+  // modale est encore totalement opaque, pour que le changement soit déjà
+  // fait — et donc invisible — quand elle se referme, au lieu d'apparaître
+  // en direct sur le diapo après le fondu de fermeture.
+  if (closedId) advanceAfterFound();
+
   dom.modalOverlay.classList.remove('open');
   setTimeout(() => {
-    const closedId = state.currentModalId;
     state.currentModalId = null;
     dom.modalProducts.innerHTML = '';
-    if (closedId) advanceAfterFound();
   }, 350);
 }
 
