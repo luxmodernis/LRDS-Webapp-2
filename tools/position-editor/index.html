@@ -173,9 +173,11 @@
       border-radius: 8px;
       padding: 8px 12px;
       font-size: 13px;
-      cursor: pointer;
+      cursor: grab;
+      user-select: none;
       transition: border-color 0.15s, opacity 0.15s;
     }
+    .pos-row.dragging { cursor: grabbing; }
     .pos-row:hover { border-color: #999; }
     .pos-row.active { border-color: #2563eb; background: #f5f8ff; }
     .pos-row.dragging { opacity: 0.4; }
@@ -186,9 +188,7 @@
       font-size: 12px;
       color: #999;
       min-width: 18px;
-      cursor: grab;
     }
-    .pos-order:active { cursor: grabbing; }
     .pos-names {
       display: flex;
       flex-direction: column;
@@ -207,6 +207,8 @@
       font-family: inherit;
       font-size: inherit;
       width: 100%;
+      cursor: text;
+      user-select: text;
     }
     .pos-name:hover { border-color: #ddd; }
     .pos-name:focus {
@@ -319,7 +321,7 @@
   <!-- Panel sous le diaporama -->
   <div id="panel">
     <h1>Éditeur de positions</h1>
-    <p class="hint">Fais glisser les boutons <strong>?</strong> sur le diaporama pour ajuster leur position, et modifie le nom de chaque ingrédient directement dans la liste ci-dessous. Le rectangle bleu représente la largeur d'un écran mobile (393px) — fais-le glisser pour prévisualiser ce qui serait visible à un endroit donné. Le JSON en bas se met à jour en temps réel.</p>
+    <p class="hint">Fais glisser les boutons <strong>?</strong> sur le diaporama pour ajuster leur position, modifie le nom de chaque ingrédient directement dans la liste ci-dessous, et fais glisser une carte sur une autre pour changer l'ordre d'appel. Le rectangle bleu représente la largeur d'un écran mobile (393px) — fais-le glisser pour prévisualiser ce qui serait visible à un endroit donné. Le JSON en bas se met à jour en temps réel.</p>
 
     <div id="positions-list"></div>
 
@@ -541,9 +543,10 @@ function renderList() {
     const row = document.createElement('div');
     row.className = 'pos-row';
     row.dataset.id = pos.id;
+    row.title = "Glisser cette carte sur une autre pour changer l'ordre d'appel";
     row.innerHTML = `
       <span class="pos-dot"></span>
-      <span class="pos-order" title="Glisser pour changer l'ordre">${pos.order}</span>
+      <span class="pos-order">${pos.order}</span>
       <span class="pos-names">
         <input class="pos-name" type="text" value="${(pos.name || '').replace(/"/g, '&quot;')}" placeholder="(sans nom)">
         <span class="pos-id">${pos.id}</span>
@@ -572,12 +575,14 @@ function renderList() {
 // Glisser la pastille "ordre" d'une ligne pour la déplacer dans la liste
 // et réassigner l'ordre d'appel de tous les ingrédients en conséquence.
 function setupRowReorderDrag(row, pos) {
-  const handle = row.querySelector('.pos-order');
   let currentDropTarget = null;
 
   function onStart(e) {
-    e.preventDefault();
-    e.stopPropagation();
+    // Laisse l'édition du nom fonctionner normalement (focus, sélection,
+    // saisie) au lieu de démarrer un drag — toute la carte est "draggable"
+    // sauf ce champ.
+    if (e.target.closest('.pos-name')) return;
+
     row.classList.add('dragging');
     window.addEventListener('mousemove', onMove);
     window.addEventListener('touchmove', onMove, { passive: false });
@@ -615,8 +620,8 @@ function setupRowReorderDrag(row, pos) {
     }
   }
 
-  handle.addEventListener('mousedown', onStart);
-  handle.addEventListener('touchstart', onStart, { passive: false });
+  row.addEventListener('mousedown', onStart);
+  row.addEventListener('touchstart', onStart, { passive: true });
 }
 
 function reorderIngredient(draggedId, targetId) {
