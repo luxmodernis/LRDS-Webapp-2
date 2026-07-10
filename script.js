@@ -1,52 +1,18 @@
 
 /* ===========================
-   SONS — Web Audio API (pas de fichiers, pas de dépendance)
+   SONS — fichiers MP3
    =========================== */
-let audioCtx = null;
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  return audioCtx;
-}
-
-// iOS Safari exige qu'un buffer audio soit joué pendant le geste utilisateur
-// pour débloquer l'AudioContext — créer/résumer le contexte ne suffit pas.
-function warmUpAudio() {
-  const ctx = getAudioCtx();
-  const buf = ctx.createBuffer(1, 1, 22050);
-  const src = ctx.createBufferSource();
-  src.buffer = buf;
-  src.connect(ctx.destination);
-  src.start(0);
-}
-document.addEventListener('touchstart', warmUpAudio, { once: true });
-document.addEventListener('click', warmUpAudio, { once: true });
-
-function playTone(freq, startTime, duration, type = 'sine', peakGain = 0.2) {
-  const ctx = getAudioCtx();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = type;
-  osc.frequency.value = freq;
-  gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(peakGain, startTime + 0.015);
-  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-  osc.connect(gain).connect(ctx.destination);
-  osc.start(startTime);
-  osc.stop(startTime + duration + 0.02);
-}
+const soundSuccess = new Audio('assets/Vrai.mp3');
+const soundError   = new Audio('assets/Faux.mp3');
 
 function playSuccessSound() {
-  const ctx = getAudioCtx();
-  const now = ctx.currentTime;
-  playTone(660, now, 0.12, 'sine', 0.18);
-  playTone(990, now + 0.09, 0.18, 'sine', 0.2);
+  soundSuccess.currentTime = 0;
+  soundSuccess.play().catch(() => {});
 }
 
 function playErrorSound() {
-  const ctx = getAudioCtx();
-  const now = ctx.currentTime;
-  playTone(180, now, 0.22, 'square', 0.1);
+  soundError.currentTime = 0;
+  soundError.play().catch(() => {});
 }
 
 /* ===========================
