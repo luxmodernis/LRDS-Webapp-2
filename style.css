@@ -146,7 +146,7 @@ img {
    =========================== */
 .plus-btn {
   position: absolute;
-  width: clamp(44px, 9.6%, 60px);
+  width: clamp(40px, calc(var(--diapo-h, 700px) * 0.101), 60px);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   display: flex;

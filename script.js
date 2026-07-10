@@ -248,6 +248,7 @@ function syncTrackWidth() {
   if (!panoramicAspectRatio) return;
   const h = dom.panoramicWrapper.offsetHeight;
   dom.panoramicTrack.style.width = Math.round(h * panoramicAspectRatio) + 'px';
+  document.documentElement.style.setProperty('--diapo-h', h + 'px');
 }
 
 function computeScrollBounds() {
