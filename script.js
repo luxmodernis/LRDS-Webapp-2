@@ -1,19 +1,54 @@
 
 /* ===========================
-   SONS — fichiers MP3
+   SONS — Web Audio API + fichiers MP3
+   HTMLAudioElement.play() a une latence trop importante pour un feedback
+   immédiat. On décode les MP3 en AudioBuffer au démarrage et on les joue
+   via AudioBufferSourceNode, ce qui donne une latence quasi nulle.
    =========================== */
-const soundSuccess = new Audio('assets/Vrai.mp3');
-const soundError   = new Audio('assets/Faux.mp3');
+let audioCtx = null;
+const audioBuffers = {};
 
-function playSuccessSound() {
-  soundSuccess.currentTime = 0;
-  soundSuccess.play().catch(() => {});
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
 }
 
-function playErrorSound() {
-  soundError.currentTime = 0;
-  soundError.play().catch(() => {});
+// iOS Safari exige qu'un buffer soit joué pendant le geste utilisateur.
+function warmUpAudio() {
+  const ctx = getAudioCtx();
+  const buf = ctx.createBuffer(1, 1, 22050);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start(0);
 }
+document.addEventListener('touchstart', warmUpAudio, { once: true });
+document.addEventListener('click', warmUpAudio, { once: true });
+
+async function loadAudioBuffers() {
+  const ctx = getAudioCtx();
+  await Promise.all(['assets/Vrai.mp3', 'assets/Faux.mp3'].map(async src => {
+    try {
+      const res = await fetch(src);
+      const ab = await res.arrayBuffer();
+      audioBuffers[src] = await ctx.decodeAudioData(ab);
+    } catch (e) {}
+  }));
+}
+
+function playBuffer(src) {
+  const buf = audioBuffers[src];
+  if (!buf) return;
+  const ctx = getAudioCtx();
+  const source = ctx.createBufferSource();
+  source.buffer = buf;
+  source.connect(ctx.destination);
+  source.start(0);
+}
+
+function playSuccessSound() { playBuffer('assets/Vrai.mp3'); }
+function playErrorSound()   { playBuffer('assets/Faux.mp3'); }
 
 /* ===========================
    ASSETS
@@ -75,9 +110,9 @@ async function init() {
   state.texts = await loadTexts();
   applyAppTexts();
 
-  // Précharge les images des modales en parallèle du chargement du
-  // panoramique, pour qu'elles soient en cache dès la première ouverture.
+  // Précharge les images et les sons en parallèle du chargement du panoramique.
   preloadModalImages();
+  loadAudioBuffers();
 
   const panoramicSrc = state.config.panoramic || ASSETS.panoramic;
   await new Promise(resolve => {
