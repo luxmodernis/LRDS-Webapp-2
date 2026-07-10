@@ -9,11 +9,15 @@ function getAudioCtx() {
   return audioCtx;
 }
 
-// iOS Safari bloque l'AudioContext jusqu'au premier geste utilisateur.
-// On le crée et résume dès le premier touch/click sur la page pour qu'il
-// soit prêt quand le premier son doit jouer.
+// iOS Safari exige qu'un buffer audio soit joué pendant le geste utilisateur
+// pour débloquer l'AudioContext — créer/résumer le contexte ne suffit pas.
 function warmUpAudio() {
-  getAudioCtx();
+  const ctx = getAudioCtx();
+  const buf = ctx.createBuffer(1, 1, 22050);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start(0);
 }
 document.addEventListener('touchstart', warmUpAudio, { once: true });
 document.addEventListener('click', warmUpAudio, { once: true });
