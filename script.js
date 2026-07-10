@@ -9,6 +9,15 @@ function getAudioCtx() {
   return audioCtx;
 }
 
+// iOS Safari bloque l'AudioContext jusqu'au premier geste utilisateur.
+// On le crée et résume dès le premier touch/click sur la page pour qu'il
+// soit prêt quand le premier son doit jouer.
+function warmUpAudio() {
+  getAudioCtx();
+}
+document.addEventListener('touchstart', warmUpAudio, { once: true });
+document.addEventListener('click', warmUpAudio, { once: true });
+
 function playTone(freq, startTime, duration, type = 'sine', peakGain = 0.2) {
   const ctx = getAudioCtx();
   const osc = ctx.createOscillator();
