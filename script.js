@@ -1,6 +1,3 @@
-// Hauteurs naturelles des images produits, stockées au préchargement.
-// Clé = chemin src, valeur = naturalHeight en px.
-const imgHeights = {};
 
 /* ===========================
    SONS — Web Audio API (pas de fichiers, pas de dépendance)
@@ -230,7 +227,6 @@ function preloadModalImages() {
   ingredients.forEach(ing => {
     (ing.products || []).forEach(src => {
       const i = new Image();
-      i.onload = () => { imgHeights[src] = i.naturalHeight; };
       i.src = src;
     });
   });
@@ -373,14 +369,6 @@ function openModal(id) {
   dom.modalProducts.innerHTML = '';
   const srcs = ing.products || [];
 
-  // Hauteur de référence = la plus grande parmi les images de cette modale
-  // (ou 800px par défaut). Sert à calculer un max-height proportionnel
-  // pour chaque image, de sorte qu'une petite bouteille reste petite
-  // même quand elle partage l'écran avec une grande.
-  const refH = srcs.reduce((max, src) => Math.max(max, imgHeights[src] || 800), 0) || 800;
-  const isMulti = srcs.length > 1;
-  const baseVh = isMulti ? 27 : 52;
-
   srcs.forEach((src, i) => {
     const wrap = document.createElement('div');
     wrap.className = 'modal-product';
@@ -390,11 +378,6 @@ function openModal(id) {
     img.src = src;
     img.alt = texts.products?.[i] || '';
     img.draggable = false;
-
-    // Applique un max-height proportionnel à la hauteur naturelle de l'image
-    // par rapport à la référence — préserve les ordres de grandeur réels.
-    const natH = imgHeights[src] || refH;
-    img.style.maxHeight = ((natH / refH) * baseVh).toFixed(2) + 'vh';
 
     const caption = document.createElement('p');
     caption.className = 'modal-product-caption';

@@ -317,17 +317,17 @@ img {
 }
 .modal-product-img {
   display: block;
-  width: auto;
-  max-width: 72%;
+  /* Toutes les images font 800px de large : même largeur CSS = proportions
+     relatives préservées automatiquement via la hauteur naturelle de chaque image */
+  width: 58%;
+  height: auto;
   object-fit: contain;
-  /* 1 produit : image grande */
-  max-height: 52vh;
+  max-height: 55vh; /* filet de sécurité sur très petits écrans */
 }
-/* 2 produits : max-height et max-width réduits pour que les deux tiennent
-   et qu'aucun produit ne domine la vue même s'il est de format large */
+/* 2 produits : largeur réduite pour que les deux tiennent côte à côte (vertical) */
 .modal-products:has(.modal-product ~ .modal-product) .modal-product-img {
-  max-height: 27vh;
-  max-width: 56%;
+  width: 42%;
+  max-height: 35vh;
 }
 .modal-product-caption {
   font-size: 18px;
