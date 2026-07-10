@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="LRDS-Webapp-2" version="1.0"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                      http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="ORG-1">
+    <organization identifier="ORG-1">
+      <title>Chasse aux ingrédients bienfaisants — Diptyque</title>
+      <item identifier="ITEM-1" identifierref="RES-1">
+        <title>Chasse aux ingrédients bienfaisants</title>
+        <adlcp:masteryscore>80</adlcp:masteryscore>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="RES-1" type="webcontent" adlcp:scormtype="sco" href="index.html">
+      <file href="index.html"/>
+      <file href="script.js"/>
+      <file href="style.css"/>
+      <file href="scorm.js"/>
+      <file href="assets/ingredient-found.svg"/>
+      <file href="assets/ingredient-unfound.svg"/>
+      <file href="assets/fonts/DiptyqueSaintGermain-Regular.woff2"/>
+      <file href="assets/fonts/DiptyqueSaintGermain-Regular.woff"/>
+      <file href="assets/fonts/DiptyqueSaintGermain-Bold.woff2"/>
+      <file href="assets/fonts/DiptyqueSaintGermain-Bold.woff"/>
+      <file href="content/config.json"/>
+      <file href="content/texts.html"/>
+      <file href="content/slides/panoramic.webp"/>
+    </resource>
+  </resources>
+</manifest>
