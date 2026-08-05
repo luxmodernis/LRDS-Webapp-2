@@ -17,6 +17,28 @@
 }
 
 /* ===========================
+   TYPO — variables pilotées par Typo-Manager (réglages par langue)
+   =========================== */
+:root {
+  --font-family-main: 'Diptyque Saint-Germain', Georgia, 'Times New Roman', serif;
+  --font-size-delta: 0px;
+  --line-height-extra: 0;
+}
+
+/* ===========================
+   RTL (arabe...) — cf. RTL_LANGS dans script.js. Uniquement le texte se
+   lit en RTL : la mise en page (panoramique, animation des modales) reste
+   toujours identique au FR, donc on ne touche jamais au `dir` du document,
+   seulement à la `direction` des éléments de texte ci-dessous.
+   =========================== */
+.rtl-text .instruction-text,
+.rtl-text .btn-pill,
+.rtl-text .modal-title,
+.rtl-text .modal-product-caption {
+  direction: rtl;
+}
+
+/* ===========================
    RESET & BASE
    =========================== */
 *, *::before, *::after {
@@ -30,7 +52,7 @@ html, body {
   background: #fff;
 }
 body {
-  font-family: 'Diptyque Saint-Germain', Georgia, 'Times New Roman', serif;
+  font-family: var(--font-family-main);
   font-weight: 400;
   color: #000;
   -webkit-font-smoothing: antialiased;
@@ -72,15 +94,15 @@ img {
   padding: clamp(22px, 5vh, 48px) 40px;
 }
 .instruction-text {
-  font-size: clamp(15px, 4.5vw, 18px);
-  line-height: 1.2;
+  font-size: clamp(calc(15px + var(--font-size-delta)), 4.5vw, calc(18px + var(--font-size-delta)));
+  line-height: calc(1.2 + var(--line-height-extra));
   text-align: center;
   color: #000;
   transition: opacity 0.4s ease;
 }
 .instruction-text strong {
   display: block;
-  font-size: clamp(20px, 6vw, 24px);
+  font-size: clamp(calc(20px + var(--font-size-delta)), 6vw, calc(24px + var(--font-size-delta)));
   font-weight: 700;
   text-transform: uppercase;
   margin-top: 5px;
@@ -235,9 +257,9 @@ img {
   border: 2px solid #fff;
   border-radius: 40px;
   padding: 14px 50px;
-  font-family: 'Diptyque Saint-Germain', Georgia, serif;
+  font-family: var(--font-family-main);
   font-weight: 700;
-  font-size: clamp(16px, 4vw, 20px);
+  font-size: clamp(calc(16px + var(--font-size-delta)), 4vw, calc(20px + var(--font-size-delta)));
   letter-spacing: 0.02em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -267,6 +289,8 @@ img {
 
 /* ===========================
    MODAL SHEET
+   App mobile-first : la modale est bridée à 430px de large sur desktop
+   pour que les % d'images restent cohérents quelle que soit la taille d'écran.
    =========================== */
 .modal-sheet {
   position: relative;
@@ -274,6 +298,9 @@ img {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  max-width: 430px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 /* Titre fixe */
@@ -283,9 +310,9 @@ img {
   text-align: center;
 }
 .modal-title {
-  font-size: 24px;
+  font-size: calc(24px + var(--font-size-delta));
   font-weight: 700;
-  line-height: 1;
+  line-height: calc(1 + var(--line-height-extra));
   color: #000;
   text-transform: uppercase;
 }
@@ -309,6 +336,7 @@ img {
 }
 .modal-product {
   flex: 0 0 auto;
+  width: 100%; /* ancre le référentiel pour que width:% sur l'image soit cohérent */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -318,20 +346,19 @@ img {
 .modal-product-img {
   display: block;
   /* Toutes les images font 800px de large : même largeur CSS = proportions
-     relatives préservées automatiquement via la hauteur naturelle de chaque image */
+     relatives préservées automatiquement via la hauteur naturelle de chaque image.
+     Pas de max-height : il briderait inégalement les images selon leur ratio
+     et ferait varier leur largeur rendue — ce qui est exactement ce qu'on évite. */
   width: 70%;
   height: auto;
-  object-fit: contain;
-  max-height: 55vh; /* filet de sécurité sur très petits écrans */
 }
 /* 2 produits */
 .modal-products:has(.modal-product ~ .modal-product) .modal-product-img {
   width: 60%;
-  max-height: 35vh;
 }
 .modal-product-caption {
-  font-size: 18px;
-  line-height: 1.2;
+  font-size: calc(18px + var(--font-size-delta));
+  line-height: calc(1.2 + var(--line-height-extra));
   text-transform: uppercase;
   color: #000;
   max-width: 200px;
@@ -437,3 +464,4 @@ img {
 .pw-input.shake {
   animation: shake 0.35s ease;
 }
+
