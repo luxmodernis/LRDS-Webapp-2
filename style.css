@@ -213,29 +213,25 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 25px;
   padding: 26px 0;
-  position: relative; /* ancre le btn-close en position absolue */
 }
 
-/* Bouton fermer — cercle noir avec × blanc, coin bas-droite, toujours visible */
-.btn-close {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
+/* Bouton fermer — cercle blanc + contour noir + × noir, inline dans le strip */
+.btn-cross {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: none;
   background: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
 }
-.btn-close svg {
+.btn-cross-icon {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
 }
 .progress-track {
   position: relative;

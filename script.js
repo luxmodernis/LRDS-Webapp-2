@@ -100,7 +100,7 @@ const dom = {
   modalTitle:       $('modalTitle'),
   modalProducts:    $('modalProducts'),
   btnRetour:        $('btnRetour'),
-  btnClose:         $('btnClose'),
+  btnCross:         $('btnCross'),
 };
 
 /* ===========================
@@ -159,7 +159,7 @@ async function init() {
   setupProgressBar();
   setupRetour();
   setupQuit();
-  setupClose();
+  setupCross();
   window.addEventListener('resize', onResize);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
   new ResizeObserver(onResize).observe(dom.panoramicWrapper);
@@ -638,8 +638,8 @@ function setupQuit() {
   });
 }
 
-function setupClose() {
-  dom.btnClose.addEventListener('click', () => {
+function setupCross() {
+  dom.btnCross.addEventListener('click', () => {
     // Reporte la progression courante avant de fermer, même si le jeu
     // n'est pas terminé — le LMS connaît ainsi le pourcentage exact atteint.
     if (window.ScormBridge) {

@@ -213,6 +213,25 @@
       driver.commit();
       driver.terminate();
     },
+
+    /**
+     * Langue du cours dans Teach on Mars (différente de la langue de
+     * l'appli). Lit ToM.env.get('CONTENT_LANGUAGE') — indépendant du
+     * driver de reporting choisi ci-dessus (ToM.env vs ToM.data sont deux
+     * namespaces distincts). Retourne null si aucun environnement ToM
+     * n'est détecté (test local/Vercel, SCORM Cloud) : le contenu doit
+     * alors retomber sur une langue par défaut.
+     */
+    getContentLanguage: function () {
+      var tom = findToM();
+      if (tom && tom.env) {
+        try {
+          var lang = tom.env.get('CONTENT_LANGUAGE');
+          if (lang) return String(lang).toLowerCase();
+        } catch (e) {}
+      }
+      return null;
+    },
   };
 
   window.ScormBridge = ScormBridge;
