@@ -82,6 +82,14 @@
           return true;
         } catch (e) { return false; }
       },
+      // Clé libre côté ToM (même mécanisme que 'progress') — sert à
+      // reprendre la partie là où l'utilisateur l'a quittée.
+      setSuspendData: function (str) {
+        try { api.data.set('suspend_data', str); return true; } catch (e) { return false; }
+      },
+      getSuspendData: function () {
+        try { return api.data.get('suspend_data') || ''; } catch (e) { return ''; }
+      },
     };
   }
 
@@ -109,6 +117,14 @@
         var r1 = api.LMSSetValue('cmi.core.score.raw', '100');
         var r2 = api.LMSSetValue('cmi.core.lesson_status', 'completed');
         return r1 === 'true' && r2 === 'true';
+      },
+      // cmi.suspend_data : champ texte libre (4096 car. max en SCORM 1.2)
+      // prévu pour reprendre une session interrompue.
+      setSuspendData: function (str) {
+        return api.LMSSetValue('cmi.suspend_data', str) === 'true';
+      },
+      getSuspendData: function () {
+        return api.LMSGetValue('cmi.suspend_data') || '';
       },
     };
   }
@@ -142,6 +158,14 @@
         var r4 = api.SetValue('cmi.progress_measure', '1');
         return [r1, r2, r3, r4].every(function (r) { return r === 'true'; });
       },
+      // cmi.suspend_data : champ texte libre (64000 car. max en SCORM 2004)
+      // prévu pour reprendre une session interrompue.
+      setSuspendData: function (str) {
+        return api.SetValue('cmi.suspend_data', str) === 'true';
+      },
+      getSuspendData: function () {
+        return api.GetValue('cmi.suspend_data') || '';
+      },
     };
   }
 
@@ -153,6 +177,8 @@
       commit: function () { return false; },
       setProgress: function () { return false; },
       setCompleted: function () { return false; },
+      setSuspendData: function () { return false; },
+      getSuspendData: function () { return ''; },
     };
   }
 
@@ -212,6 +238,33 @@
       if (!initialized || !driver) return;
       driver.commit();
       driver.terminate();
+    },
+
+    /**
+     * Sauvegarde l'état du jeu (ingrédients trouvés + cible en cours) dans
+     * cmi.suspend_data, pour reprendre une session interrompue au lieu de
+     * tout recommencer au prochain lancement. `data` est sérialisé en JSON.
+     */
+    saveState: function (data) {
+      if (!initialized || !driver) return;
+      try {
+        driver.setSuspendData(JSON.stringify(data));
+        driver.commit();
+      } catch (e) {}
+    },
+
+    /**
+     * Relit l'état sauvegardé au lancement précédent. Retourne null si
+     * aucune donnée valide n'est trouvée (première visite, hors LMS, JSON
+     * corrompu...).
+     */
+    loadState: function () {
+      if (!initialized || !driver) return null;
+      try {
+        var raw = driver.getSuspendData();
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) { return null; }
     },
 
     /**

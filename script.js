@@ -154,7 +154,12 @@ async function init() {
   computeScrollBounds();
   renderIngredientButtons();
   showAllButtons();
-  updatePrompt();
+  restoreProgress();
+  if (state.allFound) {
+    showCompletionState();
+  } else {
+    updatePrompt();
+  }
   setupDrag();
   setupProgressBar();
   setupRetour();
@@ -494,6 +499,7 @@ function advanceAfterFound() {
   if (window.ScormBridge) ScormBridge.reportProgress(state.found.size / total);
 
   state.targetIndex += 1;
+  persistState();
 
   if (state.found.size >= total && !state.allFound) {
     state.allFound = true;
@@ -501,6 +507,39 @@ function advanceAfterFound() {
     showCompletionState();
   } else {
     updatePrompt();
+  }
+}
+
+// Sauvegarde l'état courant (ingrédients trouvés + cible en cours) dans
+// cmi.suspend_data, pour que la partie reprenne là où l'utilisateur l'a
+// quittée au prochain lancement — sans quoi il doit tout recommencer.
+function persistState() {
+  if (!window.ScormBridge) return;
+  ScormBridge.saveState({ found: [...state.found], targetIndex: state.targetIndex });
+}
+
+// Relit l'état sauvegardé au lancement précédent (s'il existe) et remet
+// le jeu dans le même état : boutons déjà trouvés cochés, cible en cours
+// repositionnée. Silencieux si aucune sauvegarde valide n'est trouvée.
+function restoreProgress() {
+  if (!window.ScormBridge) return;
+  const saved = ScormBridge.loadState();
+  if (!saved || !Array.isArray(saved.found)) return;
+
+  const total = orderedIngredients().length;
+  const validIds = new Set((state.config.ingredients || []).map(i => i.id));
+
+  saved.found.forEach(id => {
+    if (!validIds.has(id)) return;
+    state.found.add(id);
+    const btn = getIngredientBtn(id);
+    if (btn) btn.querySelector('.btn-circle').src = ASSETS.ingredientFound;
+  });
+
+  state.targetIndex = Math.min(Math.max(saved.targetIndex || 0, 0), total);
+
+  if (total > 0 && state.found.size >= total) {
+    state.allFound = true;
   }
 }
 
