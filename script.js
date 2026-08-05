@@ -100,6 +100,7 @@ const dom = {
   modalTitle:       $('modalTitle'),
   modalProducts:    $('modalProducts'),
   btnRetour:        $('btnRetour'),
+  btnClose:         $('btnClose'),
 };
 
 /* ===========================
@@ -107,7 +108,18 @@ const dom = {
    =========================== */
 async function init() {
   state.config = await loadConfig();
-  state.texts = await loadTexts();
+
+  const langSettings = await loadLangSettings();
+  const activeLang = resolveActiveLanguage(langSettings);
+  document.documentElement.lang = activeLang;
+  // La mise en page (panoramique, animation des modales) reste toujours en
+  // LTR comme en FR — seul le texte doit se lire en RTL. Le sens du
+  // document (`dir`) n'est donc jamais changé ; on ajoute juste une classe
+  // que style.css cible sur les éléments de texte uniquement.
+  document.documentElement.classList.toggle('rtl-text', RTL_LANGS.has(activeLang));
+  applyTypography(langSettings[activeLang] || langSettings.fr);
+
+  state.texts = await loadTexts(activeLang);
   applyAppTexts();
 
   // Précharge les images et les sons en parallèle du chargement du panoramique.
@@ -147,6 +159,7 @@ async function init() {
   setupProgressBar();
   setupRetour();
   setupQuit();
+  setupClose();
   window.addEventListener('resize', onResize);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
   new ResizeObserver(onResize).observe(dom.panoramicWrapper);
@@ -191,6 +204,45 @@ async function loadConfig() {
   }
 }
 
+const LANG_SETTINGS_FALLBACK = {
+  fr: { fontFamily: null, sizeAdjust: 0, lineHeightAdjust: 0 },
+};
+
+// Langues à sens de lecture droite-à-gauche (code ToM / tomCode).
+const RTL_LANGS = new Set(['ar', 'he', 'fa', 'ur']);
+
+// Réglages typo par langue (typo, taille, interlignage), embarqués dans
+// le package et maintenus par l'outil Typo-Manager — voir content/lang-settings.json.
+async function loadLangSettings() {
+  try {
+    const res = await fetch('content/lang-settings.json');
+    return await res.json();
+  } catch (e) {
+    console.warn('lang-settings.json not found, using defaults');
+    return LANG_SETTINGS_FALLBACK;
+  }
+}
+
+// Langue de contenu Teach on Mars (cf. scorm.js) si détectée et connue de
+// lang-settings.json, sinon repli sur le français.
+function resolveActiveLanguage(langSettings) {
+  const tomLang = window.ScormBridge ? ScormBridge.getContentLanguage() : null;
+  if (tomLang && langSettings[tomLang]) return tomLang;
+  return 'fr';
+}
+
+// Applique la typo/taille/interlignage d'une langue via les custom
+// properties CSS déjà en place dans style.css.
+function applyTypography(settings) {
+  if (!settings) return;
+  const root = document.documentElement.style;
+  if (settings.fontFamily) {
+    root.setProperty('--font-family-main', `'${settings.fontFamily}', 'Diptyque Saint-Germain', Georgia, 'Times New Roman', serif`);
+  }
+  root.setProperty('--font-size-delta', `${settings.sizeAdjust || 0}px`);
+  root.setProperty('--line-height-extra', `${(settings.lineHeightAdjust || 0) / 1000}`);
+}
+
 const TEXTS_FALLBACK = {
   app: {
     promptPrefix: "Retrouvez l'ingrédient bienfaisant :",
@@ -201,12 +253,15 @@ const TEXTS_FALLBACK = {
   ingredients: {},
 };
 
-// Charge et parse le fichier unique de textes (content/texts.html).
-// C'est ce fichier qui est remplacé d'une langue à l'autre pour les
-// packages Teach on Mars — voir les commentaires en tête du fichier.
-async function loadTexts() {
+// Charge et parse le fichier de textes de la langue active
+// (content/texts/<lang>.html). Un fichier par langue, tous embarqués dans
+// le même package — voir les commentaires en tête de content/texts/fr.html.
+// Repli sur le français si le fichier de la langue est absent (traduction
+// pas encore reçue).
+async function loadTexts(lang) {
   try {
-    const res = await fetch('content/texts.html');
+    let res = await fetch(`content/texts/${lang}.html`);
+    if (!res.ok && lang !== 'fr') res = await fetch('content/texts/fr.html');
     const html = await res.text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
 
@@ -579,9 +634,19 @@ function setupRetour() {
 function setupQuit() {
   dom.btnQuit.addEventListener('click', () => {
     if (window.ScormBridge) ScormBridge.terminate();
-    // Ferme la fenêtre/webview après que le LMS a eu le temps de terminer
-    // (sur Teach on Mars, api.utils.close() est appelé via terminate(),
-    // mais window.close() sert de filet de sécurité si la détection échoue)
+    setTimeout(() => { try { window.close(); } catch (e) {} }, 300);
+  });
+}
+
+function setupClose() {
+  dom.btnClose.addEventListener('click', () => {
+    // Reporte la progression courante avant de fermer, même si le jeu
+    // n'est pas terminé — le LMS connaît ainsi le pourcentage exact atteint.
+    if (window.ScormBridge) {
+      const total = orderedIngredients().length;
+      if (total > 0) ScormBridge.reportProgress(state.found.size / total);
+      ScormBridge.terminate();
+    }
     setTimeout(() => { try { window.close(); } catch (e) {} }, 300);
   });
 }
