@@ -26,13 +26,32 @@
       <file href="scorm.js"/>
       <file href="assets/ingredient-found.svg"/>
       <file href="assets/ingredient-unfound.svg"/>
+      <file href="assets/progress-cross.svg"/>
+      <file href="assets/Vrai.mp3"/>
+      <file href="assets/Faux.mp3"/>
       <file href="assets/fonts/DiptyqueSaintGermain-Regular.woff2"/>
       <file href="assets/fonts/DiptyqueSaintGermain-Regular.woff"/>
       <file href="assets/fonts/DiptyqueSaintGermain-Bold.woff2"/>
       <file href="assets/fonts/DiptyqueSaintGermain-Bold.woff"/>
       <file href="content/config.json"/>
-      <file href="content/texts.html"/>
+      <file href="content/texts/fr.html"/>
       <file href="content/slides/panoramic.webp"/>
+      <file href="content/modals/ing-01/product-1.webp"/>
+      <file href="content/modals/ing-01/product-2.webp"/>
+      <file href="content/modals/ing-02/product-1.webp"/>
+      <file href="content/modals/ing-03/product-1.webp"/>
+      <file href="content/modals/ing-04/product-1.webp"/>
+      <file href="content/modals/ing-04/product-2.webp"/>
+      <file href="content/modals/ing-05/product-1.webp"/>
+      <file href="content/modals/ing-05/product-2.webp"/>
+      <file href="content/modals/ing-06/product-1.webp"/>
+      <file href="content/modals/ing-07/product-1.webp"/>
+      <file href="content/modals/ing-08/product-1.webp"/>
+      <file href="content/modals/ing-09/product-1.webp"/>
+      <file href="content/modals/ing-10/product-1.webp"/>
+      <file href="content/modals/ing-11/product-1.webp"/>
+      <file href="content/modals/ing-12/product-1.webp"/>
+      <file href="content/modals/ing-13/product-1.webp"/>
     </resource>
   </resources>
 </manifest>
