@@ -82,13 +82,14 @@
           return true;
         } catch (e) { return false; }
       },
-      // Clé libre côté ToM (même mécanisme que 'progress') — sert à
-      // reprendre la partie là où l'utilisateur l'a quittée.
+      // Clé ToM camelCase 'suspendData' (namespace ToM.data — convention
+      // différente de cmi.suspend_data en snake_case des drivers SCORM
+      // ci-dessous, cf. doc ToM "ToM JavaScript library usage" p.10).
       setSuspendData: function (str) {
-        try { api.data.set('suspend_data', str); return true; } catch (e) { return false; }
+        try { api.data.set('suspendData', str); return true; } catch (e) { return false; }
       },
       getSuspendData: function () {
-        try { return api.data.get('suspend_data') || ''; } catch (e) { return ''; }
+        try { return api.data.get('suspendData') || ''; } catch (e) { return ''; }
       },
     };
   }

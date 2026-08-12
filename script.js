@@ -699,7 +699,11 @@ function onResize() {
 /* ===========================
    START
    =========================== */
-document.addEventListener('DOMContentLoaded', () => {
+// `load` (pas DOMContentLoaded) : window.top.ToM n'est pas garanti injecté
+// par l'app ToM avant que la page (et ses ressources) soit complètement
+// chargée — démarrer trop tôt fait échouer findToM() en silence, avec
+// repli sur le driver no-op (rien n'est jamais envoyé à ToM).
+window.addEventListener('load', () => {
   if (window.ScormBridge) ScormBridge.initialize();
   init();
 });
