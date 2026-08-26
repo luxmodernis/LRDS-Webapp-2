@@ -296,11 +296,17 @@ async function loadTexts(lang) {
 /* ===========================
    PRELOAD — images des modales
    =========================== */
+// Cache src -> ratio (naturalHeight / naturalWidth), rempli au chargement.
+// Sert à calculer la taille d'affichage des produits sans attendre un
+// nouveau chargement réseau à l'ouverture de chaque modale.
+const productImageRatios = new Map();
+
 function preloadModalImages() {
   const ingredients = state.config.ingredients || [];
   ingredients.forEach(ing => {
     (ing.products || []).forEach(src => {
       const i = new Image();
+      i.onload = () => productImageRatios.set(src, i.naturalHeight / i.naturalWidth);
       i.src = src;
     });
   });
@@ -464,6 +470,7 @@ function openModal(id) {
   });
 
   dom.modalOverlay.classList.add('open');
+  sizeModalProducts();
 
   // Le bouton "?" ne passe en coche qu'une fois la modale totalement
   // opaque, pour ne pas apercevoir le changement par transparence pendant
@@ -485,6 +492,53 @@ function closeModal() {
     state.currentModalId = null;
     dom.modalProducts.innerHTML = '';
   }, 350);
+}
+
+// Calcule la largeur d'affichage des produits (identique pour tous, dans la
+// même modale) à partir de la hauteur réellement disponible, plutôt qu'un
+// pourcentage fixe qui laisse beaucoup de vide sur les grands écrans et
+// peut déborder sur les petits. Le produit le plus haut (ratio hauteur/
+// largeur le plus grand) fixe la contrainte : on dimensionne tous les
+// produits sur cette base pour que même lui tienne dans l'espace dispo.
+function sizeModalProducts() {
+  const id = state.currentModalId;
+  const ing = id && state.config.ingredients.find(i => i.id === id);
+  if (!ing) return;
+
+  const rows = [...dom.modalProducts.querySelectorAll('.modal-product')];
+  const srcs = ing.products || [];
+  if (!rows.length || rows.length !== srcs.length) return;
+
+  const ratios = srcs.map(src => productImageRatios.get(src));
+  // Pas encore préchargée (cas limite) : on garde le % CSS par défaut
+  // plutôt que de calculer sur une valeur manquante.
+  if (ratios.some(r => !r)) return;
+
+  const GAP = 10; // doit rester synchronisé avec `gap` de .modal-product en CSS
+  const H_PADDING = 32; // doit rester synchronisé avec `padding` de .modal-products
+  const FILL_FACTOR = 0.92; // laisse un peu d'air pour `justify-content: space-evenly`
+
+  const captionsTotal = rows.reduce(
+    (sum, row) => sum + row.querySelector('.modal-product-caption').offsetHeight, 0
+  );
+  const overheadTotal = captionsTotal + rows.length * GAP;
+
+  const availableHeight = dom.modalProducts.clientHeight;
+  const sumRatio = ratios.reduce((a, b) => a + b, 0);
+  const imgBudget = availableHeight * FILL_FACTOR - overheadTotal;
+  if (imgBudget <= 0 || sumRatio <= 0) return;
+
+  let width = imgBudget / sumRatio;
+
+  // Garde-fous esthétiques : jamais plus large que 90% de l'espace dispo (la
+  // modale reste de toute façon bridée à 430px sur desktop, cf. .modal-sheet)
+  // ni plus étroit que 40% pour éviter un rendu chétif sur les cas extrêmes.
+  const contentWidth = dom.modalProducts.clientWidth - H_PADDING * 2;
+  width = Math.max(contentWidth * 0.4, Math.min(width, contentWidth * 0.9));
+
+  rows.forEach(row => {
+    row.querySelector('.modal-product-img').style.width = width.toFixed(1) + 'px';
+  });
 }
 
 /* ===========================
@@ -694,6 +748,9 @@ function onResize() {
   syncTrackWidth();
   computeScrollBounds();
   setScrollX(state.scrollX);
+  // Recalcule la taille des produits si une modale est ouverte (rotation
+  // d'écran, redimensionnement de la fenêtre du navigateur...).
+  if (state.currentModalId) sizeModalProducts();
 }
 
 /* ===========================
