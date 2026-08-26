@@ -11,7 +11,7 @@ const path = require('path');
 const PORT    = 3333;
 const ROOT    = path.join(__dirname, '..'); // racine du projet
 const CONFIG  = path.join(ROOT, 'content', 'config.json');
-const TEXTS   = path.join(ROOT, 'content', 'texts.html');
+const TEXTS   = path.join(ROOT, 'content', 'texts', 'fr.html');
 
 function escapeRegExp(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -76,7 +76,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // ── API : sauvegarde des noms d'ingrédients (dans texts.html) ───────────
+  // ── API : sauvegarde des noms d'ingrédients (dans texts/fr.html) ────────
   if (req.method === 'POST' && req.url === '/api/save-names') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
@@ -87,8 +87,14 @@ const server = http.createServer((req, res) => {
         let saved = 0;
 
         newNames.forEach(({ id, title }) => {
+          // `^` (mode multiligne) ancre sur le vrai tag en début de ligne —
+          // sans ça, la même chaîne apparaît aussi, indentée, dans l'exemple
+          // donné par les instructions de traduction en haut du fichier, et
+          // le remplacement non-ancré finissait par écraser tout le contenu
+          // entre les deux occurrences.
           const re = new RegExp(
-            `(<section data-ingredient="${escapeRegExp(id)}">[\\s\\S]*?<h1 data-key="title">)([\\s\\S]*?)(</h1>)`
+            `(^<section data-ingredient="${escapeRegExp(id)}">[\\s\\S]*?<h1 data-key="title">)([\\s\\S]*?)(</h1>)`,
+            'm'
           );
           if (re.test(html)) {
             html = html.replace(re, (_, before, _old, after) => before + escapeHtml(title.trim()) + after);
@@ -99,7 +105,7 @@ const server = http.createServer((req, res) => {
         fs.writeFileSync(TEXTS, html, 'utf8');
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: true, saved }));
-        console.log(`✓ ${saved} noms d'ingrédients sauvegardés dans texts.html`);
+        console.log(`✓ ${saved} noms d'ingrédients sauvegardés dans texts/fr.html`);
       } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: e.message }));
