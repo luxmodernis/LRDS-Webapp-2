@@ -107,8 +107,8 @@
       "id": "ing-10",
       "order": 10,
       "position": {
-        "x": 66.2,
-        "y": 9
+        "x": 67.78,
+        "y": 6.45
       },
       "products": [
         "content/modals/ing-10/product-1.webp"
@@ -118,8 +118,8 @@
       "id": "ing-11",
       "order": 11,
       "position": {
-        "x": 71.67,
-        "y": 24.08
+        "x": 71.81,
+        "y": 16.6
       },
       "products": [
         "content/modals/ing-11/product-1.webp"
