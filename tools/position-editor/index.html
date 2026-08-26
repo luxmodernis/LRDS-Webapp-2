@@ -145,6 +145,13 @@
       margin: 0 auto;
     }
 
+    #panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
     #panel h1 {
       font-size: 18px;
       font-weight: 700;
@@ -155,6 +162,45 @@
       color: #666;
       line-height: 1.5;
       max-width: 900px;
+    }
+
+    /* Toggle "Aperçu du rendu final" — masque labels + repère mobile */
+    #preview-toggle {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 1.5px solid #ccc;
+      border-radius: 24px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #preview-toggle:hover { border-color: #999; }
+    #preview-toggle .dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: #ccc;
+      flex-shrink: 0;
+    }
+    #preview-toggle.active {
+      background: #000;
+      border-color: #000;
+      color: #fff;
+    }
+    #preview-toggle.active .dot { background: #4ade80; }
+
+    /* Mode aperçu : cache les repères d'édition pour voir le rendu final */
+    #layout.preview-mode .btn-label,
+    #layout.preview-mode #mobile-frame {
+      display: none;
+    }
+    #layout.preview-mode .plus-btn {
+      cursor: default;
     }
 
     /* Position list — grille pour tout voir sans scroller */
@@ -320,8 +366,11 @@
 
   <!-- Panel sous le diaporama -->
   <div id="panel">
-    <h1>Éditeur de positions</h1>
-    <p class="hint">Fais glisser les boutons <strong>?</strong> sur le diaporama pour ajuster leur position, modifie le nom de chaque ingrédient directement dans la liste ci-dessous, et fais glisser une carte sur une autre pour changer l'ordre d'appel. Le rectangle bleu représente la largeur d'un écran mobile (393px) — fais-le glisser pour prévisualiser ce qui serait visible à un endroit donné. Le JSON en bas se met à jour en temps réel.</p>
+    <div id="panel-header">
+      <h1>Éditeur de positions</h1>
+      <button id="preview-toggle" type="button"><span class="dot"></span>Aperçu du rendu final</button>
+    </div>
+    <p class="hint">Fais glisser les boutons <strong>?</strong> sur le diaporama pour ajuster leur position, modifie le nom de chaque ingrédient directement dans la liste ci-dessous, et fais glisser une carte sur une autre pour changer l'ordre d'appel. Le rectangle bleu représente la largeur d'un écran mobile (393px) — fais-le glisser pour prévisualiser ce qui serait visible à un endroit donné. Le JSON en bas se met à jour en temps réel. Le bouton « Aperçu du rendu final » masque les étiquettes et le repère mobile pour voir le panoramique comme un joueur le verrait.</p>
 
     <div id="positions-list"></div>
 
@@ -360,6 +409,16 @@ const img   = document.getElementById('panoramic-img');
 const mobileFrame = document.getElementById('mobile-frame');
 const positionsList = document.getElementById('positions-list');
 const jsonOutput = document.getElementById('json-output');
+const layout = document.getElementById('layout');
+const previewToggle = document.getElementById('preview-toggle');
+
+// Toggle "Aperçu du rendu final" : masque les étiquettes des boutons et le
+// repère mobile pour voir le panoramique tel qu'un joueur le verrait.
+previewToggle.addEventListener('click', () => {
+  const active = layout.classList.toggle('preview-mode');
+  previewToggle.classList.toggle('active', active);
+  previewToggle.lastChild.textContent = active ? 'Afficher les repères' : 'Aperçu du rendu final';
+});
 
 // Charge les noms d'ingrédients depuis texts/fr.html pour les afficher dans
 // la liste — config.json ne contient pas de texte, seulement des id.
