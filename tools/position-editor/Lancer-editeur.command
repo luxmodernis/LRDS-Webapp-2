@@ -5,9 +5,22 @@
 
 cd "$(dirname "$0")/../.."
 
+URL="http://localhost:3333/tools/position-editor/"
+
 echo "Démarrage du serveur — Éditeur de positions"
-echo "Ouvre ensuite : http://localhost:3333/tools/position-editor/"
+echo "Ouverture de $URL dans le navigateur..."
 echo "Pour arrêter : ferme cette fenêtre de Terminal, ou appuie sur Ctrl+C."
 echo ""
 
-node tools/server.js
+# Lance le serveur en arrière-plan, laisse le temps de démarrer, puis ouvre
+# l'URL dans le navigateur par défaut.
+node tools/server.js &
+SERVER_PID=$!
+
+sleep 1
+open "$URL"
+
+# Attend le serveur au premier plan pour que la fenêtre reste ouverte tant
+# qu'il tourne, et l'arrête proprement si on ferme la fenêtre/Ctrl+C.
+trap "kill $SERVER_PID 2>/dev/null" EXIT
+wait $SERVER_PID
