@@ -361,11 +361,11 @@ const mobileFrame = document.getElementById('mobile-frame');
 const positionsList = document.getElementById('positions-list');
 const jsonOutput = document.getElementById('json-output');
 
-// Charge les noms d'ingrédients depuis texts.html pour les afficher dans la
-// liste — config.json ne contient pas de texte, seulement des id.
+// Charge les noms d'ingrédients depuis texts/fr.html pour les afficher dans
+// la liste — config.json ne contient pas de texte, seulement des id.
 async function loadNames() {
   try {
-    const html = await fetch('/content/texts.html').then(r => r.text());
+    const html = await fetch('/content/texts/fr.html').then(r => r.text());
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const map = {};
     doc.querySelectorAll('[data-ingredient]').forEach(section => {
