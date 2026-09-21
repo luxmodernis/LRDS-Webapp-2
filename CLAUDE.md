@@ -14,7 +14,7 @@ client fournit le contenu définitif.
 ## Règle du jeu
 
 - Le texte en haut affiche l'ingrédient à trouver, un par un et dans
-  l'ordre (`content/texts.html`, ordonné par `config.json` → `order`).
+  l'ordre (`content/texts/<lang>.html`, ordonné par `config.json` → `order`).
 - Bon bouton cliqué → son de validation, la modale du produit
   s'ouvre (nom + images produits + légendes), le bouton passe en coche
   blanche une fois qu'on revient sur le diapo (RETOUR).
@@ -44,7 +44,7 @@ script.js             Toute la logique app (jeu + sons + SCORM + drag)
 scorm.js               Bridge SCORM/ToM (voir plus bas)
 content/
   config.json           Positions des boutons + chemins des assets (PAS de texte)
-  texts.html              TOUS les textes de l'app — fichier à traduire (voir plus bas)
+  texts/fr.html            TOUS les textes de l'app en FR — SEUL fichier de langue présent ici (voir plus bas)
   slides/panoramic.webp     Image panoramique
   modals/ing-01../13/       product-1.png, product-2.png... par ingrédient
 tools/
@@ -71,20 +71,36 @@ tools/
   la fermeture de la modale (RETOUR) qui fait avancer `targetIndex`
   via `advanceAfterFound` — pas le clic lui-même — pour laisser le
   temps de voir le contenu du produit avant que le prompt change.
-- **Textes centralisés** (`content/texts.html`) : un seul fichier
-  HTML structuré et commenté contient tous les textes (app + 13
-  ingrédients, avec leurs produits associés). C'est le fichier à
-  dupliquer/traduire pour produire un package par langue sur Teach on
-  Mars — voir les commentaires en tête du fichier. `config.json` ne
-  contient aucun texte, seulement positions et chemins d'assets ; le
+- **Textes centralisés, un seul package multilingue, ce repo ne contient
+  que le FR** (`content/texts/fr.html`, textes app + 13 ingrédients avec
+  leurs produits associés) : les traductions, les polices additionnelles
+  et `content/lang-settings.json` **ne sont jamais écrits ici** — ils
+  vivent uniquement dans `Typo-Manager/translations/` et
+  `Typo-Manager/config/`, et ne sont fusionnés que dans le zip généré par
+  l'outil (dossier temporaire, jamais dans ce repo). **Pas de zip par
+  langue** — un seul package est déposé sur Teach on Mars, commun à
+  toutes les langues du training course (cf. `_doc ToM/ToM Web Activity
+  documentation.pdf` section "Content translation"). Au chargement,
+  `script.js` détecte la langue du cours via
+  `ScormBridge.getContentLanguage()`, charge `content/texts/<lang>.html`
+  (repli sur `fr.html` si absent — le cas en local/Vercel, où seul le FR
+  existe) et applique la typo/taille/interlignage de
+  `content/lang-settings.json` s'il existe (3 custom properties CSS dans
+  `style.css`, avec repli neutre si le fichier est absent). `config.json`
+  ne contient aucun texte, seulement positions et chemins d'assets ; le
   nombre et l'ordre des produits par ingrédient doivent rester
-  synchronisés entre les deux fichiers.
+  synchronisés entre les deux fichiers. Tout le workflow multilingue est
+  géré par l'outil `Typo-Manager/` (voir son propre `CLAUDE.md`, à la
+  racine du dossier parent).
 - **Préchargement** : toutes les images produits sont préchargées au
   démarrage (`preloadModalImages`) pour que l'ouverture de modale soit
-  instantanée. `texts.html` et `config.json` sont fetchés une fois au
-  démarrage aussi.
+  instantanée. `texts/<lang>.html` et `config.json` sont fetchés une fois
+  au démarrage aussi.
 - **SCORM** (`scorm.js`) : détecte automatiquement Teach on Mars /
-  SCORM 2004 / SCORM 1.2 en remontant la chaîne parent/opener. Reporte
+  SCORM 2004 / SCORM 1.2 en remontant la chaîne parent/opener.
+  `ScormBridge.getContentLanguage()` lit `ToM.env.get('CONTENT_LANGUAGE')`
+  (namespace indépendant du driver de reporting `ToM.data` ci-dessous) —
+  retourne `null` hors LMS. Reporte
   la progression (`found/13`) à **chaque** ingrédient trouvé, pas
   seulement à la fin — si l'utilisateur quitte avant d'avoir tout
   trouvé, le LMS connaît son pourcentage exact. Hors LMS (test local/
