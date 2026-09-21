@@ -125,6 +125,9 @@ async function init() {
   // Précharge les images et les sons en parallèle du chargement du panoramique.
   preloadModalImages();
   loadAudioBuffers();
+  // Icône « trouvé » préchargée : sinon elle n'est demandée qu'au premier
+  // clic réussi et le bouton peut apparaître vide/cassé le temps du chargement.
+  new Image().src = ASSETS.ingredientFound;
 
   const panoramicSrc = state.config.panoramic || ASSETS.panoramic;
   await new Promise(resolve => {
@@ -150,6 +153,13 @@ async function init() {
   // texte de fin) — pas seulement le premier rendu — pour que le diapo
   // en dessous ne change jamais de taille pendant la partie.
   lockTextZoneHeight();
+  // Les polices additionnelles (coréen, japonais, chinois...) ne se chargent
+  // qu'à leur premier usage : la mesure ci-dessus a été faite avec la police
+  // de repli. Sans re-mesure une fois la vraie police prête, le texte se
+  // re-découpe en plus de lignes et le diapo (donc les boutons) saute.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(lockTextZoneHeight);
+  }
 
   computeScrollBounds();
   renderIngredientButtons();
@@ -191,6 +201,7 @@ function measureTextZoneHeightFor(html) {
 // dessous garde toujours la même taille quel que soit le nombre de lignes
 // du texte affiché.
 function lockTextZoneHeight() {
+  dom.textZone.style.minHeight = '';
   const candidates = Object.values(state.texts.ingredients)
     .map(t => `${state.texts.app.promptPrefix}<strong>${t.title || ''}</strong>`);
   candidates.push(state.texts.app.completionText);
