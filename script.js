@@ -256,7 +256,7 @@ function applyTypography(settings) {
     root.setProperty('--font-family-main', `'${settings.fontFamily}', 'Diptyque Saint-Germain', Georgia, 'Times New Roman', serif`);
   }
   root.setProperty('--font-size-delta', `${settings.sizeAdjust || 0}px`);
-  root.setProperty('--line-height-extra', `${(settings.lineHeightAdjust || 0) / 1000}`);
+  root.setProperty('--line-height-extra', `${(settings.lineHeightAdjust || 0) / 100}`);
 }
 
 const TEXTS_FALLBACK = {
