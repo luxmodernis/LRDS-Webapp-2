@@ -223,11 +223,24 @@
       user-select: none;
       transition: border-color 0.15s, opacity 0.15s;
     }
-    .pos-row.dragging { cursor: grabbing; }
+    .pos-row { position: relative; }
     .pos-row:hover { border-color: #999; }
     .pos-row.active { border-color: #2563eb; background: #f5f8ff; }
-    .pos-row.dragging { opacity: 0.4; }
-    .pos-row.drop-target { border-color: #2563eb; border-style: dashed; }
+    /* Carte saisie : suit le curseur, au-dessus des autres, sans transition
+       (les autres cartes glissent vers leur nouvelle place via FLIP en JS) */
+    .pos-row.dragging {
+      cursor: grabbing;
+      z-index: 50;
+      border-color: #2563eb;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+      transition: none;
+    }
+    /* Pendant un glisser : aucune sélection de texte nulle part */
+    body.reordering, body.reordering * {
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      cursor: grabbing !important;
+    }
 
     .pos-order {
       font-family: 'SF Mono', 'Fira Mono', monospace;
@@ -612,7 +625,7 @@ function renderList() {
       </span>
       <span class="pos-coords">x: ${pos.x.toFixed(2)}%<br>y: ${pos.y.toFixed(2)}%</span>
     `;
-    row.addEventListener('click', e => { if (e.target.tagName !== 'INPUT') centerMobileFrameOn(pos.x); });
+    row.addEventListener('click', e => { if (row._justDragged) return; if (e.target.tagName !== 'INPUT') centerMobileFrameOn(pos.x); });
 
     const nameInput = row.querySelector('.pos-name');
     nameInput.addEventListener('click', e => e.stopPropagation());
@@ -631,71 +644,123 @@ function renderList() {
   });
 }
 
-// Glisser la pastille "ordre" d'une ligne pour la déplacer dans la liste
-// et réassigner l'ordre d'appel de tous les ingrédients en conséquence.
+// Glisser une carte : elle suit le curseur et les autres cartes glissent
+// (animation FLIP) pour lui laisser la place. L'ordre est mis à jour en
+// direct (numéros), puis enregistré dans `positions` au relâchement.
 function setupRowReorderDrag(row, pos) {
-  let currentDropTarget = null;
+  let startX, startY, moved = false, active = false;
+  const THRESHOLD = 4;
+
+  const rows = () => [...positionsList.querySelectorAll('.pos-row')];
+
+  // Place réelle dans la grille (offset*), indépendante des transforms et
+  // des animations en cours — évite les aller-retours quand une carte
+  // en train de glisser passe sous le curseur.
+  const slot = r => ({ left: r.offsetLeft, top: r.offsetTop, right: r.offsetLeft + r.offsetWidth, bottom: r.offsetTop + r.offsetHeight });
+  function pointerInList(c) {
+    const op = row.offsetParent, o = op.getBoundingClientRect();
+    return { x: c.clientX - o.left - op.clientLeft + op.scrollLeft, y: c.clientY - o.top - op.clientTop + op.scrollTop };
+  }
 
   function onStart(e) {
-    // Laisse l'édition du nom fonctionner normalement (focus, sélection,
-    // saisie) au lieu de démarrer un drag — toute la carte est "draggable"
-    // sauf ce champ.
+    // Laisse l'édition du nom fonctionner normalement (focus, sélection)
     if (e.target.closest('.pos-name')) return;
-
-    row.classList.add('dragging');
+    if (e.type === 'mousedown') {
+      if (e.button !== 0) return;
+      e.preventDefault(); // pas de sélection de texte au drag
+    }
+    const c = e.touches ? e.touches[0] : e;
+    startX = c.clientX; startY = c.clientY;
+    moved = false; active = true;
     window.addEventListener('mousemove', onMove);
     window.addEventListener('touchmove', onMove, { passive: false });
     window.addEventListener('mouseup', onEnd);
     window.addEventListener('touchend', onEnd);
   }
 
-  function onMove(e) {
-    if (e.cancelable) e.preventDefault();
-    const client = e.touches ? e.touches[0] : e;
-    const el = document.elementFromPoint(client.clientX, client.clientY);
-    const targetRow = el?.closest('.pos-row');
+  function follow(c) {
+    row.style.transform = `translate(${c.clientX - startX - (row.offsetLeft - row._baseLeft)}px, ${c.clientY - startY - (row.offsetTop - row._baseTop)}px)`;
+  }
 
-    if (currentDropTarget && currentDropTarget !== targetRow) {
-      currentDropTarget.classList.remove('drop-target');
-      currentDropTarget = null;
+  function onMove(e) {
+    if (!active) return;
+    const c = e.touches ? e.touches[0] : e;
+    if (!moved) {
+      if (Math.hypot(c.clientX - startX, c.clientY - startY) < THRESHOLD) return;
+      moved = true;
+      row._baseLeft = row.offsetLeft; row._baseTop = row.offsetTop;
+      row.classList.add('dragging');
+      document.body.classList.add('reordering');
+      window.getSelection()?.removeAllRanges();
     }
-    if (targetRow && targetRow !== row) {
-      targetRow.classList.add('drop-target');
-      currentDropTarget = targetRow;
-    }
+    if (e.cancelable) e.preventDefault();
+    follow(c);
+
+    // Carte survolée (hors carte saisie) ?
+    const others = rows().filter(r => r !== row);
+    const p = pointerInList(c);
+    const target = others.find(r => {
+      const b = slot(r);
+      return p.x >= b.left && p.x <= b.right && p.y >= b.top && p.y <= b.bottom;
+    });
+    if (!target) return;
+
+    const all = rows();
+    const goingForward = all.indexOf(row) < all.indexOf(target);
+
+    // FLIP : positions avant
+    const first = new Map(others.map(r => [r, r.getBoundingClientRect()]));
+    positionsList.insertBefore(row, goingForward ? target.nextSibling : target);
+    renumber();
+    follow(c); // la carte saisie reste sous le curseur malgré son nouvel emplacement
+
+    others.forEach(r => {
+      const last = r.getBoundingClientRect();
+      const f = first.get(r);
+      const dx = f.left - last.left, dy = f.top - last.top;
+      if (!dx && !dy) return;
+      r.style.transition = 'none';
+      r.style.transform = `translate(${dx}px, ${dy}px)`;
+      r.getBoundingClientRect(); // force reflow
+      r.style.transition = 'transform 0.22s ease';
+      r.style.transform = '';
+    });
+  }
+
+  function renumber() {
+    rows().forEach((r, i) => { r.querySelector('.pos-order').textContent = i + 1; });
   }
 
   function onEnd() {
-    row.classList.remove('dragging');
     window.removeEventListener('mousemove', onMove);
     window.removeEventListener('touchmove', onMove);
     window.removeEventListener('mouseup', onEnd);
     window.removeEventListener('touchend', onEnd);
+    active = false;
+    if (!moved) return;
 
-    if (currentDropTarget) {
-      currentDropTarget.classList.remove('drop-target');
-      reorderIngredient(pos.id, currentDropTarget.dataset.id);
-      currentDropTarget = null;
+    document.body.classList.remove('reordering');
+    // La carte glisse jusqu'à sa place, puis on enregistre le nouvel ordre
+    row.classList.remove('dragging');
+    row.style.transition = 'transform 0.18s ease';
+    row.style.transform = '';
+    setTimeout(() => { row.style.transition = ''; }, 200);
+
+    const ids = rows().map(r => r.dataset.id);
+    const changed = ids.some((id, i) => positions[i].id !== id);
+    if (changed) {
+      positions.sort((p, q) => ids.indexOf(p.id) - ids.indexOf(q.id));
+      positions.forEach((p, i) => { p.order = i + 1; });
+      renderButtons();
+      updateJSON();
     }
+    // Évite que le clic de relâchement recentre le cadre mobile
+    row._justDragged = true;
+    setTimeout(() => { row._justDragged = false; }, 0);
   }
 
   row.addEventListener('mousedown', onStart);
   row.addEventListener('touchstart', onStart, { passive: true });
-}
-
-function reorderIngredient(draggedId, targetId) {
-  if (draggedId === targetId) return;
-  const fromIndex = positions.findIndex(p => p.id === draggedId);
-  const toIndex = positions.findIndex(p => p.id === targetId);
-  if (fromIndex === -1 || toIndex === -1) return;
-
-  const [moved] = positions.splice(fromIndex, 1);
-  positions.splice(toIndex, 0, moved);
-  positions.forEach((p, i) => { p.order = i + 1; });
-
-  renderList();
-  renderButtons();
-  updateJSON();
 }
 
 function updateList() {
